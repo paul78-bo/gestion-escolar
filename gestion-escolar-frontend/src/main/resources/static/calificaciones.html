@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Calificaciones - Gestión Escolar</title>
+    <link rel="stylesheet" href="css/styles.css">
+    <style>
+        .split-layout {
+            display: grid;
+            grid-template-columns: 400px 1fr; /* Izquierda formulario, derecha boleta */
+            gap: 20px;
+            align-items: start;
+        }
+        @media (max-width: 1100px) {
+            .split-layout { grid-template-columns: 1fr; }
+        }
+        
+        .form-group { margin-bottom: 15px; }
+        .form-group label { display: block; margin-bottom: 5px; font-weight: bold; font-size: 13px; color: #333; }
+        
+        .boleta-preview { font-size: 11px; width: 100%; border-collapse: collapse; margin-top: 15px; }
+        .boleta-preview th, .boleta-preview td { border: 1px solid #000; padding: 6px; text-align: center; }
+        .boleta-preview th { background-color: #f7e6b9; color: #000; text-transform: uppercase; }
+        .boleta-preview .th-gris { background-color: #f0f0f0 !important; }
+        .boleta-preview .fila-promedio td { background-color: #f0f0f0; font-weight: bold; }
+        
+        /* Estilos para el formulario de búsqueda inicial */
+        .buscador-inicial { max-width: 600px; margin: 40px auto; text-align: center; }
+        .buscador-inicial h2 { color: #004080;
+        
+         }
+                /* 👈 REGLAS PARA QUE SOLO SE IMPRIMA LA BOLETA */
+        @media print {
+            /* Ocultar el menú, el banner, la columna izquierda (formulario) y botones */
+            .sidebar, .banner, #vista-buscador, #vista-trabajo > div:first-child { 
+                display: none !important; 
+            }
+            
+            /* Hacer que la columna de la boleta ocupe todo el ancho */
+            .content { margin: 0 !important; padding: 0 !important; width: 100% !important; }
+            .split-layout { display: block !important; }
+            .card { box-shadow: none !important; border: none !important; margin: 0 !important; padding: 0 !important; }
+            
+            /* Ajustar el tamaño de la tabla para que quepa perfecto */
+            .boleta-preview { font-size: 12px !important; width: 100% !important; }
+            .boleta-preview th, .boleta-preview td { padding: 8px !important; }
+            
+            /* Forzar los colores (los navegadores quitan los fondos al imprimir) */
+            .boleta-preview th { background-color: #f7e6b9 !important; -webkit-print-color-adjust: exact; }
+            .boleta-preview .th-gris { background-color: #f0f0f0 !important; -webkit-print-color-adjust: exact; }
+            .fila-promedio-general td { background-color: #f0f0f0 !important; -webkit-print-color-adjust: exact; }
+            #pv-prom-general { background-color: #d4edda !important; -webkit-print-color-adjust: exact; }
+            #pv-prom-t1, #pv-prom-t2, #pv-prom-t3 { background-color: #fff3cd !important; -webkit-print-color-adjust: exact; }
+        }
+        
+    </style>
+</head>
+<body>
+    <div class="sidebar">
+        <h2>🎓 Gestión Escolar</h2>
+        <a href="dashboard.html">📊 Dashboard</a>
+        <a href="alumnos.html">👥 Alumnos</a>
+        <a href="profesores.html">👨‍🏫 Profesores</a>
+        <a href="materias.html">📚 Materias</a>
+        <a href="grupos.html">🏫 Grupos</a>
+        <a href="ciclos.html">📅 Ciclos</a>
+        <a href="asignaciones.html">📋 Asignaciones</a>
+        <a href="horario.html">🗓️ Horario</a>
+        <a href="inscripciones.html">📝 Inscripciones</a>
+        <a href="calificaciones.html" class="active">📊 Calificaciones</a>
+        <a href="#" onclick="logout()">🚪 Cerrar Sesión</a>
+    </div>
+
+    <div class="content">
+        <div class="banner">
+            <h2>📊 Captura de Calificaciones</h2>
+            <div>Bienvenido, <strong id="usernameDisplay"></strong> | <span id="rolDisplay"></span></div>
+        </div>
+
+        <!-- VISTA 1: BUSCADOR INICIAL -->
+        <div id="vista-buscador" class="buscador-inicial">
+            <div class="card">
+                <h2>Buscar Alumno</h2>
+                <p style="color: #666; margin-bottom: 20px;">Ingresa el nombre o matrícula del alumno para cargar su boleta.</p>
+                <div style="display: flex; gap: 10px; justify-content: center;">
+                    <input type="text" id="inputBuscarInicial" class="form-control" placeholder="Ej. Felix o 2313" style="max-width: 300px;" onkeypress="if(event.key === 'Enter') buscarInicial()">
+                    <button class="btn btn-primary" onclick="buscarInicial()">🔍 Buscar</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- VISTA 2: PANEL DE TRABAJO (Se muestra al encontrar al alumno) -->
+        <div class="split-layout" id="vista-trabajo" style="display: none;">
+            
+            <!-- COLUMNA IZQUIERDA: Formulario de Calificación -->
+            <div>
+                <div class="card">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; border-bottom: 1px solid #ddd; padding-bottom: 10px;">
+                        <h3 style="margin: 0; color: #004080;">Calificando</h3>
+                        <button class="btn btn-secondary btn-sm" onclick="regresarBuscador()">Cambiar Alumno</button>
+                    </div>
+
+                    <div id="info-alumno-calificar" style="margin-bottom: 20px; padding: 15px; background: #f8f9fa; border-left: 4px solid #004080; border-radius: 4px;"></div>
+                    
+                    <div class="form-group">
+                        <label>Grupo</label>
+                        <select id="selectGrupo" class="form-control" onchange="cargarMateriasDelGrupo()"></select>
+                    </div>
+                    <div class="form-group">
+                        <label>Materia / Asignación</label>
+                        <select id="selectAsignacion" class="form-control" onchange="cargarNotaExistente()">
+                            <option value="">-- Selecciona Materia --</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Trimestre</label>
+                        <select id="selectPeriodo" class="form-control" onchange="cargarNotaExistente()">
+                            <option value="1">1er Trimestre</option>
+                            <option value="2">2do Trimestre</option>
+                            <option value="3">3er Trimestre</option>
+                        </select>
+                    </div>
+
+                    <div style="display: grid; grid-template-columns: 100px 1fr; gap: 10px; align-items: end; margin-top: 20px;">
+                        <div class="form-group" style="margin: 0;">
+                            <label>Nota</label>
+                            <input type="number" id="inputNota" class="form-control" min="0" max="10" step="0.1" style="font-size: 18px; font-weight: bold; text-align: center;">
+                        </div>
+                        <div class="form-group" style="margin: 0;">
+                            <label>Observaciones</label>
+                            <input type="text" id="inputObs" class="form-control" maxlength="255">
+                        </div>
+                    </div>
+
+                    <div style="margin-top: 20px; display: flex; flex-direction: column; gap: 10px;">
+                        <button class="btn btn-success" style="width: 100%;" onclick="guardarCalificacion()">💾 Guardar Calificación</button>
+                        <a href="dashboard.html" class="btn btn-secondary" style="text-decoration: none; text-align: center; padding: 10px;">🏠 Ir al Dashboard</a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- COLUMNA DERECHA: Vista Previa de la Boleta -->
+                      <!-- COLUMNA DERECHA: Vista Previa de la Boleta -->
+            <div class="card" style="background: #fff;">
+                <h3 style="text-align: center; margin-top: 0;">Boleta de Calificaciones</h3>
+                
+                <table class="boleta-preview">
+                    <thead>
+                        <tr>
+                            <th rowspan="2" class="th-gris">CAMPO</th>
+                            <th colspan="3">LENGUAJES</th>
+                            <th colspan="2">SABERES</th>
+                            <th colspan="3">ÉTICA</th>
+                            <th colspan="2">HUMANO</th>
+                            <th rowspan="2" class="th-gris">PROM</th>
+                        </tr>
+                        <tr>
+                            <th>ESP</th><th>ING</th><th>ART</th>
+                            <th>MAT</th><th>BIO</th>
+                            <th>GEO</th><th>HIS</th><th>FCE</th>
+                            <th>TEC</th><th>EFI</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <!-- FILA 1er TRIMESTRE -->
+                        <tr>
+                            <td class="th-gris td-izquierda" style="font-weight:bold;">1º</td>
+                            <td id="pv-t1-espanol"></td><td id="pv-t1-ingles"></td><td id="pv-t1-artes"></td>
+                            <td id="pv-t1-matematicas"></td><td id="pv-t1-biologia"></td>
+                            <td id="pv-t1-geografia"></td><td id="pv-t1-historia"></td><td id="pv-t1-formacion"></td>
+                            <td id="pv-t1-tecnologia"></td><td id="pv-t1-educacion"></td>
+                            <td id="pv-prom-t1" style="background:#fff3cd; font-weight:bold;"></td>
+                        </tr>
+                        <!-- FILA 2do TRIMESTRE -->
+                        <tr>
+                            <td class="th-gris td-izquierda" style="font-weight:bold;">2º</td>
+                            <td id="pv-t2-espanol"></td><td id="pv-t2-ingles"></td><td id="pv-t2-artes"></td>
+                            <td id="pv-t2-matematicas"></td><td id="pv-t2-biologia"></td>
+                            <td id="pv-t2-geografia"></td><td id="pv-t2-historia"></td><td id="pv-t2-formacion"></td>
+                            <td id="pv-t2-tecnologia"></td><td id="pv-t2-educacion"></td>
+                            <td id="pv-prom-t2" style="background:#fff3cd; font-weight:bold;"></td>
+                        </tr>
+                        <!-- FILA 3er TRIMESTRE -->
+                        <tr>
+                            <td class="th-gris td-izquierda" style="font-weight:bold;">3º</td>
+                            <td id="pv-t3-espanol"></td><td id="pv-t3-ingles"></td><td id="pv-t3-artes"></td>
+                            <td id="pv-t3-matematicas"></td><td id="pv-t3-biologia"></td>
+                            <td id="pv-t3-geografia"></td><td id="pv-t3-historia"></td><td id="pv-t3-formacion"></td>
+                            <td id="pv-t3-tecnologia"></td><td id="pv-t3-educacion"></td>
+                            <td id="pv-prom-t3" style="background:#fff3cd; font-weight:bold;"></td>
+                        </tr>
+                        
+                        <!-- 👈 FILA DEL PROMEDIO GENERAL DE LOS 3 TRIMESTRES -->
+                        <tr class="fila-promedio-general">
+                            <td class="th-gris td-izquierda" style="font-weight:bold;">P.G.</td>
+                            <td colspan="10" style="text-align: right; padding-right: 15px; font-weight: bold;">PROMEDIO GENERAL DEL CICLO:</td>
+                            <td id="pv-prom-general" style="background:#d4edda; font-weight:bold; font-size: 14px;"></td>
+                        </tr>
+                    </tbody>
+                </table>
+                                <!-- ... (Justo después de cerrar la tabla de calificaciones) ... -->
+                </table>
+
+                <!-- 👈 TABLA DE FIRMAS AQUÍ 👇 -->
+                <table class="tabla-firmas" style="width: 100%; border-collapse: collapse; font-size: 11px; margin-top: 20px; margin-bottom: 20px;">
+                    <thead>
+                        <tr>
+                            <th colspan="3" style="background-color: #f7e6b9; color: #000; text-align: center; border: 1px solid #000; padding: 6px; font-weight: bold;">
+                                FIRMA DE LA MADRE PADRE O TUTOR
+                            </th>
+                        </tr>
+                        <tr>
+                            <th style="width: 33%; background-color: #f7e6b9; color: #000; border: 1px solid #000; padding: 6px;">1ER PERIODO</th>
+                            <th style="width: 33%; background-color: #f7e6b9; color: #000; border: 1px solid #000; padding: 6px;">2DO PERIODO</th>
+                            <th style="width: 33%; background-color: #f7e6b9; color: #000; border: 1px solid #000; padding: 6px;">3ER PERIODO</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td style="border: 1px solid #000; height: 50px; background-color: #fff;"></td>
+                            <td style="border: 1px solid #000; height: 50px; background-color: #fff;"></td>
+                            <td style="border: 1px solid #000; height: 50px; background-color: #fff;"></td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                
+
+                <div style="margin-top: 20px; text-align: center;">
+                    <button class="btn btn-primary" onclick="window.print()" style="padding: 10px 20px;">🖨️ Imprimir Boleta</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+	<script src="js/config.js"></script>	
+    <script src="js/auth.js"></script>
+    <script src="js/calificaciones.js"></script>
+</body>
+</html>

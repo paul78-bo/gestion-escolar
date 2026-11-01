@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Horario Escolar - Gestión Escolar</title>
+    <link rel="stylesheet" href="css/styles.css">
+    <style>
+        /* Estilos específicos para la cuadrícula del horario */
+        .horario-grid {
+            display: grid;
+            grid-template-columns: 80px repeat(5, 1fr); /* 1 columna para horas, 5 para días */
+            gap: 2px;
+            background-color: #ccc;
+            border: 2px solid #004080;
+        }
+        .horario-header {
+            background-color: #004080;
+            color: white;
+            font-weight: bold;
+            text-align: center;
+            padding: 10px;
+        }
+        .horario-hora {
+            background-color: #f0f0f0;
+            text-align: center;
+            font-weight: bold;
+            padding: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+        }
+        .horario-celda {
+            background-color: #fff;
+            padding: 5px;
+            text-align: center;
+            font-size: 12px;
+            min-height: 60px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            transition: background 0.2s;
+        }
+        .horario-celda:hover {
+            background-color: #e3f2fd;
+        }
+        .materia-nombre {
+            font-weight: bold;
+            color: #2c3e50;
+            font-size: 13px;
+        }
+        .profesor-nombre {
+            color: #7f8c8d;
+            font-size: 11px;
+        }
+        /* Colores por Campo Formativo (opcional) */
+        .LENGUAJES { background-color: #ffebee; }
+        .SABERES { background-color: #e8f5e9; }
+        .ETICA { background-color: #fff3e0; }
+        .HUMANO { background-color: #e0f7fa; }
+    </style>
+</head>
+<body>
+    <div class="sidebar">
+        <h2>🎓 Gestión Escolar</h2>
+        <a href="dashboard.html">📊 Dashboard</a>
+        <a href="alumnos.html">👥 Alumnos</a>
+        <a href="profesores.html">👨‍🏫 Profesores</a>
+        <a href="materias.html">📚 Materias</a>
+        <a href="grupos.html">🏫 Grupos</a>
+        <a href="ciclos.html">📅 Ciclos</a>
+        <a href="asignaciones.html">📋 Asignaciones</a>
+        <a href="horario.html" class="active">🗓️ Horario</a> <!-- Nuevo enlace -->
+        <a href="inscripciones.html">📝 Inscripciones</a>
+        <a href="calificaciones.html">📊 Calificaciones</a>
+        <a href="#" onclick="logout()">🚪 Cerrar Sesión</a>
+    </div>
+
+    <div class="content">
+        <div class="banner">
+            <h2>🗓️ Horario Escolar</h2>
+            <div>Bienvenido, <strong id="usernameDisplay"></strong> | <span id="rolDisplay"></span></div>
+        </div>
+
+        <!-- Selector de Grupo -->
+        <div class="card" style="margin-bottom: 20px;">
+            <div style="display: flex; gap: 15px; align-items: center;">
+                <label style="font-weight: bold; font-size: 16px;">Selecciona el Grupo:</label>
+                <select id="selectGrupo" class="form-control" style="max-width: 300px;" onchange="cargarHorario()">
+                    <option value="">-- Cargando grupos... --</option>
+                </select>
+            </div>
+        </div>
+
+        <!-- Contenedor del Horario -->
+        <div class="card">
+            <div id="contenedor-horario" class="horario-grid">
+                <!-- El JavaScript llenará esto -->
+            </div>
+        </div>
+    </div>
+
+	<script src="js/config.js"></script>
+    <script src="js/auth.js"></script>
+    <script src="js/horario.js"></script>
+</body>
+</html>

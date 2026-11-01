@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Materias - Gestión Escolar</title>
+    <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+    <!-- SIDEBAR (Se queda igual) -->
+    <div class="sidebar">
+        <h2>🎓 Gestión Escolar</h2>
+        <a href="dashboard.html">📊 Dashboard</a>
+        <a href="alumnos.html">👥 Alumnos</a>
+        <a href="profesores.html">👨‍🏫 Profesores</a>
+        <a href="materias.html" class="active">📚 Materias</a>
+        <a href="grupos.html">🏫 Grupos</a>
+        <a href="ciclos.html">📅 Ciclos</a>
+        <a href="asignaciones.html">📋 Asignaciones</a>
+        <a href="inscripciones.html">📝 Inscripciones</a>
+        <a href="calificaciones.html">📊 Calificaciones</a>
+        <a href="boletas.html">📄 Boletas</a>
+        <a href="#" onclick="logout()">🚪 Cerrar Sesión</a>
+    </div>
+
+    <!-- CONTENIDO -->
+    <div class="content">
+        <div class="banner">
+            <h2>📚 Gestión de Materias</h2>
+            <div>
+                Bienvenido, <strong id="usernameDisplay"></strong> | <span id="rolDisplay"></span>
+            </div>
+        </div>
+
+        <div id="mensaje" class="alert" style="display: none;"></div>
+
+        <div style="margin-bottom: 15px; text-align: right;">
+            <button class="btn btn-success" onclick="abrirModal()">➕ Nueva Materia</button>
+        </div>
+
+        <!-- BÚSQUEDA -->
+        <div class="card">
+            <div style="display: flex; gap: 10px;">
+                <input type="text" id="busqueda" class="form-control" placeholder="Buscar por nombre o código...">
+                <button class="btn btn-primary" onclick="buscar()">🔍 Buscar</button>
+                <button class="btn btn-secondary" onclick="limpiarBusqueda()">❌ Limpiar</button>
+            </div>
+        </div>
+
+        <!-- TABLA -->
+        <div class="card">
+            <table>
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Nombre</th>
+                        <th>Código</th>
+                        <th>Campo Formativo</th>
+                        <th>Descripción</th>
+                        <th>Acciones</th>
+                    </tr>
+                </thead>
+                <tbody id="tablaBody">
+                    <tr><td colspan="6" style="text-align: center;">Cargando...</td></tr>
+                </tbody>
+            </table>
+
+            <div style="margin-top: 15px; text-align: center;">
+                <button class="btn btn-secondary" id="btnAnterior" onclick="paginaAnterior()">← Anterior</button>
+                <span style="margin: 0 15px;">Página <strong id="paginaActual">0</strong> de <strong id="totalPaginas">0</strong></span>
+                <button class="btn btn-secondary" id="btnSiguiente" onclick="paginaSiguiente()">Siguiente →</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL CORREGIDO -->
+    <div id="modal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.5); z-index: 1000; justify-content: center; align-items: center;">
+        <div class="card" style="width: 90%; max-width: 600px; max-height: 90vh; overflow-y: auto;">
+            <h2 id="modalTitulo">Nueva Materia</h2>
+            <form id="materiaForm">
+                <input type="hidden" id="materiaId">
+
+                <div class="form-group">
+                    <label>Nombre *</label>
+                    <input type="text" id="nombre" class="form-control" required maxlength="100" placeholder="Ej. Matemáticas">
+                </div>
+
+                <div class="form-group">
+                    <label>Código *</label>
+                    <input type="text" id="codigo" class="form-control" required maxlength="20" placeholder="Ej. MAT-01">
+                </div>
+
+                <div class="form-group">
+                    <label>Campo Formativo *</label>
+                    <select id="campo" class="form-control" required>
+                        <option value="">-- Seleccionar --</option>
+                        <option value="LENGUAJES">Lenguajes</option>
+                        <option value="SABERES_Y_PENSAMIENTO_CIENTIFICO">Saberes y Pensamiento Científico</option>
+                        <option value="ETICA_NATURALEZA_Y_SOCIEDADES">Ética, Naturaleza y Sociedades</option>
+                        <option value="DE_LO_HUMANO_Y_LO_COMUNITARIO">De lo Humano y lo Comunitario</option>
+                        <option value="OTROS">Otros / Talleres</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label>Descripción (Opcional)</label>
+                    <textarea id="descripcion" class="form-control" rows="3" maxlength="500" placeholder="Breve descripción de la materia..."></textarea>
+                </div>
+
+                <div style="margin-top: 20px; text-align: right;">
+                    <button type="button" class="btn btn-secondary" onclick="cerrarModal()">Cancelar</button>
+                    <button type="submit" class="btn btn-primary">Guardar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+	<script src="js/config.js"></script>	
+    <script src="js/auth.js"></script>
+    <script src="js/materias.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            if (typeof verificarAutenticacion === 'function' && !verificarAutenticacion()) return;
+            if (typeof ajustarMenuPorRol === 'function') ajustarMenuPorRol();
+            
+            const userDisp = document.getElementById('usernameDisplay');
+            const rolDisp = document.getElementById('rolDisplay');
+            if (userDisp) userDisp.textContent = getUsername();
+            if (rolDisp) rolDisp.textContent = getRol();
+        });
+    </script>
+</body>
+</html>

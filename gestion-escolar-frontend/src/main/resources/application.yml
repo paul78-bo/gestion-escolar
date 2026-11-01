@@ -1,0 +1,14 @@
+server:
+  port: 8084
+
+spring:
+  application:
+    name: gestion-escolar-frontend
+  thymeleaf:
+    check-template-location: false
+  mvc:
+    static-path-pattern: /**
+
+# URL del backend
+api:
+  base-url: http://localhost:8083

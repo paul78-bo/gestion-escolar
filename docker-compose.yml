@@ -1,0 +1,56 @@
+services:
+  # 1. Base de Datos
+  db:
+    image: mysql:8.0
+    container_name: gestion_escolar_db
+    environment:
+      MYSQL_ROOT_PASSWORD: felix123
+      MYSQL_DATABASE: gestion_escolar_dbd
+    volumes:
+      - mysql_data:/var/lib/mysql
+    networks:
+      - gestion-network
+    # 👈 HEALTHCHECK: Docker esperará a que MySQL esté 100% listo antes de avisar
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      timeout: 20s
+      retries: 10
+
+  # 2. Backend (Java)
+  backend:
+    build: 
+      context: ./gestion-escolar-api
+      dockerfile: Dockerfile
+    container_name: gestion_escolar_backend
+    ports:
+      - "8083:8083"
+    environment:
+      DB_URL: jdbc:mysql://db:3306/gestion_escolar_dbd?useSSL=false&serverTimezone=America/Mexico_City&allowPublicKeyRetrieval=true
+      DB_USERNAME: root
+      DB_PASSWORD: felix123
+      JWT_SECRET: 404E635266556A586E3272357538782F413F4428472B4B6250645367566B5970
+    depends_on:
+      db:
+        condition: service_healthy  # 👈 OBLIGA a esperar el healthcheck
+    networks:
+      - gestion-network
+
+  # 3. Frontend (Nginx)
+  frontend:
+    build:
+      context: ./gestion-escolar-frontend/src/main/resources/static
+    container_name: gestion_escolar_frontend
+    ports:
+      - "8084:80"
+    depends_on:
+      - backend
+    networks:
+      - gestion-network
+
+# Redes y Volúmenes
+networks:
+  gestion-network:
+    driver: bridge
+
+volumes:
+  mysql_data:

@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Detalle del Grupo - Gestión Escolar</title>
+    <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+    <!-- SIDEBAR -->
+    <div class="sidebar">
+        <h2>🎓 Gestión Escolar</h2>
+        <a href="dashboard.html">📊 Dashboard</a>
+        <a href="alumnos.html">👥 Alumnos</a>
+        <a href="profesores.html">👨‍🏫 Profesores</a>
+        <a href="materias.html">📚 Materias</a>
+        <a href="grupos.html">🏫 Grupos</a>
+        <a href="ciclos.html">📅 Ciclos</a>
+        <a href="asignaciones.html">📋 Asignaciones</a>
+        <a href="inscripciones.html">📝 Inscripciones</a>
+        <a href="calificaciones.html">📊 Calificaciones</a>
+        <a href="#" onclick="logout()">🚪 Cerrar Sesión</a>
+    </div>
+
+    <div class="content">
+        <!-- BANNER -->
+        <div class="banner">
+            <h2 id="tituloGrupo">📚 Detalle del Grupo</h2>
+            <div>
+                Bienvenido, <strong id="usernameDisplay"></strong>
+                | <span id="rolDisplay"></span>
+            </div>
+        </div>
+
+        <!-- BOTÓN VOLVER -->
+        <div style="margin-bottom: 15px;">
+            <button class="btn btn-secondary" onclick="window.location.href='grupos.html'">
+                ← Volver a Grupos
+            </button>
+        </div>
+
+        <div id="mensaje" class="alert" style="display: none;"></div>
+
+        <!-- INFO DEL GRUPO -->
+        <div class="card">
+            <h3 style="margin-top: 0; color: #2c3e50;">🏫 Información del Grupo</h3>
+            <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 15px;">
+                <div>
+                    <strong>Nombre:</strong>
+                    <div id="grupoNombre">-</div>
+                </div>
+                <div>
+                    <strong>Grado:</strong>
+                    <div id="grupoGrado">-</div>
+                </div>
+                <div>
+                    <strong>Letra:</strong>
+                    <div id="grupoLetra">-</div>
+                </div>
+                <div>
+                    <strong>Turno:</strong>
+                    <div id="grupoTurno">-</div>
+                </div>
+                <div>
+                    <strong>Ciclo:</strong>
+                    <div id="grupoCiclo">-</div>
+                </div>
+                <div>
+                    <strong>Inscritos / Capacidad:</strong>
+                    <div id="grupoInscritos">-</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ESTADÍSTICAS -->
+        <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 15px; margin-top: 20px;">
+            <div class="card" style="text-align: center; padding: 15px;">
+                <div style="font-size: 32px; font-weight: bold; color: #3498db;" id="statTotalAlumnos">-</div>
+                <div style="color: #555; font-size: 13px;">ALUMNOS</div>
+            </div>
+            <div class="card" style="text-align: center; padding: 15px;">
+                <div style="font-size: 32px; font-weight: bold; color: #27ae60;" id="statPromedio">-</div>
+                <div style="color: #555; font-size: 13px;">PROMEDIO GRUPAL</div>
+            </div>
+            <div class="card" style="text-align: center; padding: 15px;">
+                <div style="font-size: 32px; font-weight: bold; color: #27ae60;" id="statAprobados">-</div>
+                <div style="color: #555; font-size: 13px;">APROBADOS</div>
+            </div>
+            <div class="card" style="text-align: center; padding: 15px;">
+                <div style="font-size: 32px; font-weight: bold; color: #e74c3c;" id="statReprobados">-</div>
+                <div style="color: #555; font-size: 13px;">REPROBADOS</div>
+            </div>
+            <div class="card" style="text-align: center; padding: 15px;">
+                <div style="font-size: 32px; font-weight: bold; color: #9b59b6;" id="statMaterias">-</div>
+                <div style="color: #555; font-size: 13px;">MATERIAS</div>
+            </div>
+        </div>
+
+        <!-- FILTRO POR MATERIA -->
+        <div class="card" style="margin-top: 20px;">
+            <div style="display: flex; gap: 10px; align-items: center;">
+                <label style="font-weight: bold;">Filtrar por materia:</label>
+                <select id="filtroMateria" class="form-control" style="max-width: 300px;" onchange="filtrarPorMateria()">
+                    <option value="">-- Todas las materias --</option>
+                </select>
+                <input type="text" id="busquedaAlumno" class="form-control" placeholder="Buscar alumno..." style="max-width: 300px;">
+                <button class="btn btn-primary" onclick="filtrarAlumnos()">🔍 Buscar</button>
+                <button class="btn btn-secondary" onclick="limpiarBusquedaAlumno()">❌ Limpiar</button>
+            </div>
+        </div>
+
+        <!-- TABLA DE ALUMNOS -->
+        <div class="card">
+            <h3 style="margin-top: 0; color: #2c3e50;">👥 Alumnos del Grupo</h3>
+            <div style="overflow-x: auto;">
+                <table id="tablaAlumnos">
+                    <thead id="tablaHeader">
+                        <!-- Se llena dinámicamente -->
+                    </thead>
+                    <tbody id="tablaBody">
+                        <tr><td colspan="5" style="text-align: center;">Cargando...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL PARA EDITAR CALIFICACIÓN -->
+    <div id="modalCalificacion" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1000; justify-content: center; align-items: center;">
+        <div class="card" style="width: 90%; max-width: 500px; max-height: 90vh; overflow-y: auto;">
+            <h2 id="modalCalificacionTitulo">Editar Calificación</h2>
+
+            <div class="form-group">
+                <label>Alumno</label>
+                <input type="text" id="calificacionAlumno" class="form-control" readonly style="background: #f0f0f0;">
+            </div>
+
+            <div class="form-group">
+                <label>Materia</label>
+                <input type="text" id="calificacionMateria" class="form-control" readonly style="background: #f0f0f0;">
+            </div>
+
+            <div class="form-group">
+                <label>Calificación (0-10)</label>
+                <input type="number" id="calificacionValor" class="form-control" step="0.1" min="0" max="10">
+            </div>
+
+            <div class="form-group">
+                <label>Observaciones</label>
+                <textarea id="calificacionObservaciones" class="form-control" rows="3" maxlength="255"></textarea>
+            </div>
+
+            <input type="hidden" id="calificacionId">
+
+            <div style="margin-top: 20px; text-align: right;">
+                <button type="button" class="btn btn-secondary" onclick="cerrarModalCalificacion()">Cancelar</button>
+                <button type="button" class="btn btn-primary" onclick="guardarCalificacion()">Guardar</button>
+            </div>
+        </div>
+    </div>
+
+
+	<script src="js/config.js"></script>
+    <script src="js/auth.js"></script>
+    <script src="js/grupo-detalle.js"></script>
+</body>
+</html>

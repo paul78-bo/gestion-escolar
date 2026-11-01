@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>Grupos - Gestión Escolar</title>
+<link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+	<div class="sidebar">
+		<h2>🎓 Gestión Escolar</h2>
+		<a href="dashboard.html">📊 Dashboard</a> <a href="alumnos.html">👥
+			Alumnos</a> <a href="profesores.html">👨‍🏫 Profesores</a> <a
+			href="materias.html">📚 Materias</a> <a href="grupos.html"
+			class="active">🏫 Grupos</a> <a href="ciclos.html">📅 Ciclos</a> <a
+			href="asignaciones.html">📋 Asignaciones</a> <a
+			href="inscripciones.html">📝 Inscripciones</a> <a
+			href="calificaciones.html">📊 Calificaciones</a> <a href="#"
+			onclick="logout()">🚪 Cerrar Sesión</a>
+	</div>
+
+	<div class="content">
+		<div class="banner">
+			<h2>🏫 Gestión de Grupos</h2>
+			<div>
+				Bienvenido, <strong id="usernameDisplay"></strong> | <span
+					id="rolDisplay"></span>
+			</div>
+		</div>
+
+		<div id="mensaje" class="alert" style="display: none;"></div>
+
+		<div style="margin-bottom: 15px; text-align: right;">
+			<button class="btn btn-success" onclick="abrirModal()">➕
+				Nuevo Grupo</button>
+		</div>
+
+		<div class="card">
+			<div style="display: flex; gap: 10px;">
+				<input type="text" id="busqueda" class="form-control"
+					placeholder="Buscar por nombre, ciclo...">
+				<button class="btn btn-primary" onclick="buscar()">🔍
+					Buscar</button>
+				<button class="btn btn-secondary" onclick="limpiarBusqueda()">❌
+					Limpiar</button>
+			</div>
+		</div>
+
+		<div class="card">
+			<table>
+				<thead>
+					<tr>
+						<th>ID</th>
+						<th>Nombre</th>
+						<th>Grado</th>
+						<th>Letra</th>
+						<th>Turno</th>
+						<th>Inscritos</th>
+						<th>Capacidad</th>
+						<th>Ciclo</th>
+						<th>Acciones</th>
+					</tr>
+				</thead>
+				<tbody id="tablaBody">
+					<tr>
+						<td colspan="9" style="text-align: center;">Cargando...</td>
+					</tr>
+				</tbody>
+			</table>
+
+			<div style="margin-top: 15px; text-align: center;">
+				<button class="btn btn-secondary" id="btnAnterior"
+					onclick="paginaAnterior()">← Anterior</button>
+				<span style="margin: 0 15px;">Página <strong
+					id="paginaActual">0</strong> de <strong id="totalPaginas">0</strong></span>
+				<button class="btn btn-secondary" id="btnSiguiente"
+					onclick="paginaSiguiente()">Siguiente →</button>
+			</div>
+		</div>
+	</div>
+
+	<div id="modal"
+		style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.5); z-index: 1000; justify-content: center; align-items: center;">
+		<div class="card"
+			style="width: 90%; max-width: 700px; max-height: 90vh; overflow-y: auto;">
+			<h2 id="modalTitulo">Nuevo Grupo</h2>
+			<form id="grupoForm">
+				<input type="hidden" id="grupoId">
+
+				<div class="row">
+					<div class="col-md-4">
+						<div class="form-group">
+							<label>Grado *</label> <select id="grado" class="form-control"
+								required>
+								<option value="">-- Seleccionar --</option>
+								<option value="1">1°</option>
+								<option value="2">2°</option>
+								<option value="3">3°</option>
+							</select>
+						</div>
+					</div>
+					<div class="col-md-4">
+						<div class="form-group">
+							<label>Letra *</label> <input type="text" id="letra"
+								class="form-control" required maxlength="5"
+								placeholder="A, B, C..." style="text-transform: uppercase;">
+						</div>
+					</div>
+					<div class="col-md-4">
+						<div class="form-group">
+							<label>Turno *</label> <select id="turno" class="form-control"
+								required>
+								<option value="">-- Seleccionar --</option>
+								<option value="MATUTINO">Matutino</option>
+								<option value="VESPERTINO">Vespertino</option>
+								<option value="NOCTURNO">Nocturno</option>
+							</select>
+						</div>
+					</div>
+					<div class="col-md-6">
+						<div class="form-group">
+							<label>Capacidad *</label> <input type="number" id="capacidad"
+								class="form-control" required min="1" max="100" value="30">
+						</div>
+					</div>
+					<div class="col-md-6">
+						<div class="form-group">
+							<label>Ciclo Escolar *</label> <select id="cicloId"
+								class="form-control" required>
+								<option value="">-- Cargando ciclos... --</option>
+							</select>
+						</div>
+					</div>
+				</div>
+
+				<div style="margin-top: 20px; text-align: right;">
+					<button type="button" class="btn btn-secondary"
+						onclick="cerrarModal()">Cancelar</button>
+					<button type="submit" class="btn btn-primary">Guardar</button>
+				</div>
+			</form>
+		</div>
+	</div>
+
+	<script src="js/config.js"></script>
+	<script src="js/auth.js"></script>
+	<script src="js/grupos.js"></script>
+	<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        ajustarMenuPorRol();
+    });
+</script>
+</body>
+</html>

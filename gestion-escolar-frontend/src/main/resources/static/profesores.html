@@ -1,0 +1,396 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>Profesores - Gestión Escolar</title>
+<link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+	<!-- SIDEBAR -->
+	<div class="sidebar">
+		<h2>🎓 Gestión Escolar</h2>
+		<a href="dashboard.html">📊 Dashboard</a> <a href="alumnos.html">👥
+			Alumnos</a> <a href="profesores.html" class="active">👨‍🏫 Profesores</a>
+		<a href="materias.html">📚 Materias</a> <a href="grupos.html">🏫
+			Grupos</a> <a href="ciclos.html">📅 Ciclos</a> <a
+			href="asignaciones.html">📋 Asignaciones</a> <a
+			href="inscripciones.html">📝 Inscripciones</a> <a
+			href="calificaciones.html">📊 Calificaciones</a> <a href="#"
+			onclick="logout()">🚪 Cerrar Sesión</a>
+	</div>
+
+	<!-- CONTENIDO -->
+	<div class="content">
+		<div class="banner">
+			<h2>👨‍🏫 Gestión de Profesores</h2>
+			<div>
+				Bienvenido, <strong id="usernameDisplay"></strong> | <span
+					id="rolDisplay"></span>
+			</div>
+		</div>
+
+		<div id="mensaje" class="alert" style="display: none;"></div>
+
+		<div style="margin-bottom: 15px; text-align: right;">
+			<button class="btn btn-success" onclick="abrirModal()">➕
+				Nuevo Profesor</button>
+		</div>
+
+		<!-- BÚSQUEDA -->
+		<div class="card">
+			<div style="display: flex; gap: 10px;">
+				<input type="text" id="busqueda" class="form-control"
+					placeholder="Buscar por nombre, apellido, N° empleado...">
+				<button class="btn btn-primary" onclick="buscar()">🔍
+					Buscar</button>
+				<button class="btn btn-secondary" onclick="limpiarBusqueda()">❌
+					Limpiar</button>
+			</div>
+		</div>
+
+		<!-- TABLA -->
+		<div class="card">
+			<table>
+				<thead>
+					<tr>
+						<th>ID</th>
+						<th>N° Empleado</th>
+						<th>Nombre</th>
+						<th>Email</th>
+						<th>Especialidad</th>
+						<th>Estatus</th>
+						<th>Acciones</th>
+					</tr>
+				</thead>
+				<tbody id="tablaBody">
+					<tr>
+						<td colspan="7" style="text-align: center;">Cargando...</td>
+					</tr>
+				</tbody>
+			</table>
+
+			<div style="margin-top: 15px; text-align: center;">
+				<button class="btn btn-secondary" id="btnAnterior"
+					onclick="paginaAnterior()">← Anterior</button>
+				<span style="margin: 0 15px;">Página <strong
+					id="paginaActual">0</strong> de <strong id="totalPaginas">0</strong></span>
+				<button class="btn btn-secondary" id="btnSiguiente"
+					onclick="paginaSiguiente()">Siguiente →</button>
+			</div>
+		</div>
+	</div>
+
+	<!-- MODAL -->
+	<div id="modal"
+		style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.5); z-index: 1000; justify-content: center; align-items: center;">
+		<div class="card"
+			style="width: 95%; max-width: 1100px; max-height: 90vh; overflow-y: auto;">
+			<h2 id="modalTitulo">Nuevo Profesor</h2>
+			<form id="profesorForm">
+				<input type="hidden" id="profesorId">
+
+				<!-- ============================================ -->
+				<!-- SECCIÓN 1: DATOS PERSONALES -->
+				<!-- ============================================ -->
+				<h3
+					style="margin-top: 20px; color: #2c3e50; border-bottom: 2px solid #3498db; padding-bottom: 5px;">
+					👤 Datos Personales</h3>
+				<div class="row">
+					<div class="col-md-4">
+						<div class="form-group">
+							<label>Nombre *</label> <input type="text" id="nombre"
+								class="form-control" required maxlength="100">
+						</div>
+					</div>
+					<div class="col-md-4">
+						<div class="form-group">
+							<label>Apellido Paterno *</label> <input type="text"
+								id="apellidoP" class="form-control" required maxlength="100">
+						</div>
+					</div>
+					<div class="col-md-4">
+						<div class="form-group">
+							<label>Apellido Materno *</label> <input type="text"
+								id="apellidoM" class="form-control" required maxlength="100">
+						</div>
+					</div>
+					<div class="col-md-4">
+						<div class="form-group">
+							<label>CURP * (18 caracteres)</label> <input type="text"
+								id="curp" class="form-control" required minlength="18"
+								maxlength="18">
+						</div>
+					</div>
+					<div class="col-md-4">
+						<div class="form-group">
+							<label>Email *</label> <input type="email" id="email"
+								class="form-control" required maxlength="150">
+						</div>
+					</div>
+					<div class="col-md-4">
+						<div class="form-group">
+							<label>Teléfono *</label> <input type="text" id="telefono"
+								class="form-control" required maxlength="15">
+						</div>
+					</div>
+					<div class="col-md-4">
+						<div class="form-group">
+							<label>Género *</label> <select id="genero" class="form-control"
+								required>
+								<option value="">-- Seleccionar --</option>
+								<option value="MASCULINO">Masculino</option>
+								<option value="FEMENINO">Femenino</option>
+								<option value="OTRO">Otro</option>
+								<option value="PREFIERO_NO_DECIR">Prefiero no decir</option>
+							</select>
+						</div>
+					</div>
+					<div class="col-md-4">
+						<div class="form-group">
+							<label>Estado Civil *</label> <select id="estadoCivil"
+								class="form-control" required>
+								<option value="">-- Seleccionar --</option>
+								<option value="SOLTERO">Soltero(a)</option>
+								<option value="CASADO">Casado(a)</option>
+								<option value="DIVORCIADO">Divorciado(a)</option>
+								<option value="VIUDO">Viudo(a)</option>
+								<option value="UNION_LIBRE">Unión libre</option>
+							</select>
+						</div>
+					</div>
+					<div class="col-md-4">
+						<div class="form-group">
+							<label>Nacionalidad *</label> <input type="text"
+								id="nacionalidad" class="form-control" required maxlength="50"
+								value="MEXICANA">
+						</div>
+					</div>
+					<div class="col-md-4">
+						<div class="form-group">
+							<label>País de Nacimiento *</label> <input type="text"
+								id="paisNacimiento" class="form-control" required maxlength="50"
+								value="MÉXICO">
+						</div>
+					</div>
+					<div class="col-md-4">
+						<div class="form-group">
+							<label>Entidad de Nacimiento *</label> <input type="text"
+								id="entidadNacimiento" class="form-control" required
+								maxlength="50">
+						</div>
+					</div>
+				</div>
+
+				<!-- ============================================ -->
+				<!-- SECCIÓN 2: DOMICILIO -->
+				<!-- ============================================ -->
+				<h3
+					style="margin-top: 20px; color: #2c3e50; border-bottom: 2px solid #3498db; padding-bottom: 5px;">
+					🏠 Domicilio</h3>
+				<div class="row">
+					<div class="col-md-6">
+						<div class="form-group">
+							<label>Calle *</label> <input type="text" id="calle"
+								class="form-control" required maxlength="100">
+						</div>
+					</div>
+					<div class="col-md-2">
+						<div class="form-group">
+							<label>No. Exterior *</label> <input type="text"
+								id="numeroExterior" class="form-control" required maxlength="10">
+						</div>
+					</div>
+					<div class="col-md-2">
+						<div class="form-group">
+							<label>No. Interior</label> <input type="text"
+								id="numeroInterior" class="form-control" maxlength="10">
+						</div>
+					</div>
+					<div class="col-md-2">
+						<div class="form-group">
+							<label>C.P. *</label> <input type="text" id="codigoPostal"
+								class="form-control" required maxlength="10">
+						</div>
+					</div>
+					<div class="col-md-4">
+						<div class="form-group">
+							<label>Colonia *</label> <input type="text" id="colonia"
+								class="form-control" required maxlength="100">
+						</div>
+					</div>
+					<div class="col-md-4">
+						<div class="form-group">
+							<label>Municipio *</label> <input type="text" id="municipio"
+								class="form-control" required maxlength="50">
+						</div>
+					</div>
+					<div class="col-md-4">
+						<div class="form-group">
+							<label>Dirección Completa *</label> <input type="text"
+								id="direccion" class="form-control" required maxlength="255">
+						</div>
+					</div>
+				</div>
+
+				<!-- ============================================ -->
+				<!-- SECCIÓN 3: DATOS PROFESIONALES -->
+				<!-- ============================================ -->
+				<h3
+					style="margin-top: 20px; color: #2c3e50; border-bottom: 2px solid #3498db; padding-bottom: 5px;">
+					💼 Datos Profesionales</h3>
+				<div class="row">
+					<div class="col-md-4">
+						<div class="form-group">
+							<label>Especialidad *</label> <input type="text"
+								id="especialidad" class="form-control" required maxlength="100">
+						</div>
+					</div>
+					<div class="col-md-4">
+						<div class="form-group">
+							<label>Grado Académico *</label> <select id="gradoAcademico"
+								class="form-control" required>
+								<option value="">-- Seleccionar --</option>
+								<option value="TECNICO">Técnico</option>
+								<option value="LICENCIATURA">Licenciatura</option>
+								<option value="MAESTRIA">Maestría</option>
+								<option value="DOCTORADO">Doctorado</option>
+								<option value="POSTDOCTORADO">Postdoctorado</option>
+							</select>
+						</div>
+					</div>
+					<div class="col-md-4">
+						<div class="form-group">
+							<label>Cédula Profesional *</label> <input type="text"
+								id="cedulaProfesional" class="form-control" required
+								maxlength="20">
+						</div>
+					</div>
+					<div class="col-md-4">
+						<div class="form-group">
+							<label>Fecha de Ingreso *</label> <input type="date"
+								id="fechaIngreso" class="form-control" required>
+						</div>
+					</div>
+					<div class="col-md-4">
+						<div class="form-group">
+							<label>Tipo de Contrato *</label> <select id="tipoContrato"
+								class="form-control" required>
+								<option value="">-- Seleccionar --</option>
+								<option value="TIEMPO_COMPLETO">Tiempo Completo</option>
+								<option value="MEDIO_TIEMPO">Medio Tiempo</option>
+								<option value="POR_HORAS">Por Horas</option>
+								<option value="HONORARIOS">Honorarios</option>
+								<option value="JORNADA">Jornada</option>
+							</select>
+						</div>
+					</div>
+					<div class="col-md-4">
+						<div class="form-group">
+							<label>Salario *</label> <input type="number" id="salario"
+								class="form-control" required step="0.01" min="0">
+						</div>
+					</div>
+					<div class="col-md-4">
+						<div class="form-group">
+							<label>N° de INE *</label> <input type="text" id="numeroIne"
+								class="form-control" required maxlength="20">
+						</div>
+					</div>
+					<div class="col-md-4">
+						<div class="form-group">
+							<label>RFC * (12-13 caracteres)</label> <input type="text"
+								id="rfc" class="form-control" required minlength="12"
+								maxlength="13">
+						</div>
+					</div>
+					<div class="col-md-4">
+						<div class="form-group">
+							<label>NSS * (11 caracteres)</label> <input type="text" id="nss"
+								class="form-control" required minlength="11" maxlength="11">
+						</div>
+					</div>
+					<div class="col-md-6">
+						<div class="form-group">
+							<label>Horario Laboral</label> <input type="text"
+								id="horarioLaboral" class="form-control" maxlength="100"
+								placeholder="Ej: Lunes a Viernes 8:00-14:00">
+						</div>
+					</div>
+					<div class="col-md-6">
+						<div class="form-group">
+							<label>Estatus</label> <select id="estatus" class="form-control">
+								<option value="ACTIVO">Activo</option>
+								<option value="INACTIVO">Inactivo</option>
+								<option value="LICENCIA">Licencia</option>
+								<option value="JUBILADO">Jubilado</option>
+								<option value="BAJA">Baja</option>
+							</select>
+						</div>
+					</div>
+				</div>
+
+				<!-- ============================================ -->
+				<!-- SECCIÓN 4: CONTACTO DE EMERGENCIA -->
+				<!-- ============================================ -->
+				<h3
+					style="margin-top: 20px; color: #2c3e50; border-bottom: 2px solid #3498db; padding-bottom: 5px;">
+					🚨 Contacto de Emergencia</h3>
+				<div class="row">
+					<div class="col-md-5">
+						<div class="form-group">
+							<label>Nombre Completo *</label> <input type="text"
+								id="contactoEmergenciaNombre" class="form-control" required
+								maxlength="150">
+						</div>
+					</div>
+					<div class="col-md-4">
+						<div class="form-group">
+							<label>Teléfono *</label> <input type="text"
+								id="contactoEmergenciaTelefono" class="form-control" required
+								maxlength="15">
+						</div>
+					</div>
+					<div class="col-md-3">
+						<div class="form-group">
+							<label>Parentesco *</label> <input type="text"
+								id="contactoEmergenciaParentesco" class="form-control" required
+								maxlength="50" placeholder="Ej: ESPOSA">
+						</div>
+					</div>
+				</div>
+
+				<!-- ============================================ -->
+				<!-- SECCIÓN 5: OBSERVACIONES -->
+				<!-- ============================================ -->
+				<h3
+					style="margin-top: 20px; color: #2c3e50; border-bottom: 2px solid #3498db; padding-bottom: 5px;">
+					📝 Observaciones</h3>
+				<div class="row">
+					<div class="col-md-12">
+						<div class="form-group">
+							<label>Observaciones</label>
+							<textarea id="observaciones" class="form-control" rows="3"
+								maxlength="500"></textarea>
+						</div>
+					</div>
+				</div>
+
+				<div style="margin-top: 20px; text-align: right;">
+					<button type="button" class="btn btn-secondary"
+						onclick="cerrarModal()">Cancelar</button>
+					<button type="submit" class="btn btn-primary">Guardar</button>
+				</div>
+			</form>
+		</div>
+	</div>
+
+	<script src="js/config.js"></script>
+	<script src="js/auth.js"></script>
+	<script src="js/profesores.js"></script>
+	<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        ajustarMenuPorRol();
+    });
+</script>
+</body>
+</html>
