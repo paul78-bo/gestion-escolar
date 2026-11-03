@@ -1,0 +1,12 @@
+docker-compose down
+(No le pongas -v, así conservas tus datos y al usuario superadmin2).
+
+
+docker-compose up -d --build frontend
+Esto va a:
+
+Empaquetar tus nuevos archivos JS.
+
+Volver a levantar el contenedor de Nginx.
+
+Mantener intactos el Backend y la Base de Datos.

@@ -1,0 +1,13 @@
+# Java
+target/
+*.class
+*.jar
+
+# IDEs
+.idea/
+*.iml
+.vscode/
+
+# Entornos y contraseñas
+.env
+application-local.properties

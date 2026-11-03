@@ -1,0 +1,19 @@
+🛠️ Paso 2: Subir a GitHub
+Puedes hacerlo desde VS Code o desde la terminal. Te doy la de terminal (es más rápida):
+
+Abre la terminal en la carpeta de tu proyecto.
+
+Inicia Git y haz el primer commit:
+
+bash
+git init
+git add .
+git commit -m "Primera version Dockerizada"
+Ve a GitHub.com, crea un "New Repository" (puede ser privado), ponle nombre (ej: gestion-escolar) y dale a Create repository.
+
+GitHub te mostrará unos comandos. Copia y pega los que dicen "push an existing repository". Se ven así (cambia TU_USUARIO):
+
+bash
+git remote add origin https://github.com/TU_USUARIO/gestion-escolar.git
+git branch -M main
+git push -u origin main
