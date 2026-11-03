@@ -47,8 +47,14 @@ public class SecurityConfig {
 				.cors(cors -> cors.configurationSource(corsConfigurationSource()))
 
 				// 3. Autorización
-				.authorizeHttpRequests(auth -> auth.requestMatchers("/api/auth/**", "/api/ping", "/swagger-ui/**", "/v3/api-docs/**",
-						"/swagger-ui.html", "/h2-console/**").permitAll().anyRequest().authenticated())
+				.authorizeHttpRequests(auth -> auth
+						// 👇 Permitir peticiones OPTIONS (preflight de CORS) PRIMERO
+						.requestMatchers(org.springframework.http.HttpMethod.OPTIONS, "/**").permitAll()
+						// Rutas públicas
+						.requestMatchers("/api/auth/**", "/api/ping", "/swagger-ui/**", "/v3/api-docs/**",
+								"/swagger-ui.html", "/h2-console/**").permitAll()
+						// Todo lo demás requiere autenticación
+						.anyRequest().authenticated())
 
 				// 4. Respuesta 401 cuando NO está autenticado
 				.exceptionHandling(exception -> exception
@@ -72,6 +78,7 @@ public class SecurityConfig {
 	@Bean
 	public CorsConfigurationSource corsConfigurationSource() {
 		CorsConfiguration configuration = new CorsConfiguration();
+		// ✅ Agregamos la IP de IONOS a los orígenes permitidos
 		configuration.setAllowedOrigins(Arrays.asList("http://localhost:8084", "http://74.208.219.237:8084"));
 		configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"));
 		configuration.setAllowedHeaders(Arrays.asList("*"));
@@ -80,7 +87,7 @@ public class SecurityConfig {
 
 		UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
 		source.registerCorsConfiguration("/**", configuration);
-		return source; // ✅ Sin cast
+		return source;
 	}
 
 	@Bean
