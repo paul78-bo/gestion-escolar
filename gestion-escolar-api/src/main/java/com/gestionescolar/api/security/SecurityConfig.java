@@ -20,7 +20,6 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.web.cors.CorsConfiguration;
-import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 import org.springframework.web.filter.CorsFilter;
 import org.springframework.security.web.authentication.HttpStatusEntryPoint;
@@ -42,15 +41,14 @@ public class SecurityConfig {
 	@Bean
 	public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
 		http
-				// 1. Deshabilitar CSRF (usamos JWT, no cookies)
+				// 1. Deshabilitar CSRF
 				.csrf(csrf -> csrf.disable())
 
-				// 2. CORS
-				.cors(cors -> cors.configurationSource(corsConfigurationSource()))
+				// 2. Ya NO configuramos CORS aquí, lo hace el bean de abajo (corsFilterRegistration)
 
 				// 3. Autorización
 				.authorizeHttpRequests(auth -> auth
-						// 👇 Permitir peticiones OPTIONS (preflight de CORS) PRIMERO
+						// Permitir preflight OPTIONS
 						.requestMatchers(org.springframework.http.HttpMethod.OPTIONS, "/**").permitAll()
 						// Rutas públicas
 						.requestMatchers("/api/auth/**", "/api/ping", "/swagger-ui/**", "/v3/api-docs/**",
@@ -78,18 +76,20 @@ public class SecurityConfig {
 	}
 
 	@Bean
-	public CorsConfigurationSource corsConfigurationSource() {
-		CorsConfiguration configuration = new CorsConfiguration();
-		// ✅ Agregamos la IP de IONOS a los orígenes permitidos
-		configuration.setAllowedOrigins(Arrays.asList("http://localhost:8084", "http://74.208.219.237:8084"));
-		configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"));
-		configuration.setAllowedHeaders(Arrays.asList("*"));
-		configuration.setAllowCredentials(true);
-		configuration.setMaxAge(3600L);
+	public FilterRegistrationBean<CorsFilter> corsFilterRegistration() {
+		CorsConfiguration config = new CorsConfiguration();
+		config.setAllowedOrigins(Arrays.asList("http://localhost:8084", "http://74.208.219.237:8084"));
+		config.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"));
+		config.setAllowedHeaders(Arrays.asList("*"));
+		config.setAllowCredentials(true);
+		config.setMaxAge(3600L);
 
 		UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
-		source.registerCorsConfiguration("/**", configuration);
-		return source;
+		source.registerCorsConfiguration("/**", config);
+
+		FilterRegistrationBean<CorsFilter> bean = new FilterRegistrationBean<>(new CorsFilter(source));
+		bean.setOrder(Ordered.HIGHEST_PRECEDENCE); // 👈 Se ejecuta ANTES que todo
+		return bean;
 	}
 
 	@Bean
@@ -108,24 +108,5 @@ public class SecurityConfig {
 	@Bean
 	public AuthenticationManager authenticationManager(AuthenticationConfiguration config) throws Exception {
 		return config.getAuthenticationManager();
-	}
-	
-	
-	
-	@Bean
-	public FilterRegistrationBean<CorsFilter> corsFilterRegistration() {
-	    CorsConfiguration config = new CorsConfiguration();
-	    config.setAllowedOrigins(Arrays.asList("http://localhost:8084", "http://74.208.219.237:8084"));
-	    config.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"));
-	    config.setAllowedHeaders(Arrays.asList("*"));
-	    config.setAllowCredentials(true);
-	    config.setMaxAge(3600L);
-
-	    UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
-	    source.registerCorsConfiguration("/**", config);
-
-	    FilterRegistrationBean<CorsFilter> bean = new FilterRegistrationBean<>(new CorsFilter(source));
-	    bean.setOrder(Ordered.HIGHEST_PRECEDENCE); // 👈 Se ejecuta ANTES que todo
-	    return bean;
 	}
 }
