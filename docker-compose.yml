@@ -43,7 +43,7 @@ services:
     ports:
       - "8084:80"
     volumes:
-      - ./gestion-escolar-frontend/nginx.conf:/etc/nginx/conf.d/default.conf:ro
+      - ./gestion-escolar-frontend/nginx.conf:/etc/nginx/conf.d/default.conf
     depends_on:
       - backend
     networks:
