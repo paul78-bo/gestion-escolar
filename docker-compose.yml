@@ -40,8 +40,8 @@ services:
     build:
       context: ./gestion-escolar-frontend/src/main/resources/static
     container_name: gestion_escolar_frontend
-    #ports:
-    #  - "8084:80"
+    ports:
+      - "8084:80"
     volumes:
       - ./gestion-escolar-frontend/nginx.conf:/etc/nginx/conf.d/default.conf
     depends_on:
