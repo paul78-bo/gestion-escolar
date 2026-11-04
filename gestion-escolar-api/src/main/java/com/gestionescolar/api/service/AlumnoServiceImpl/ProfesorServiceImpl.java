@@ -109,22 +109,22 @@ public class ProfesorServiceImpl implements ProfesorService {
 		Profesor p = profesorRepository.findById(id).orElseThrow(() -> new ProfesorNoEncontradoException(id));
 
 		// Validar email único (si cambió)
-		if (!p.getEmail().equals(dto.getEmail()) && profesorRepository.existsByEmail(dto.getEmail())) {
+		if (!java.util.Objects.equals(p.getEmail(), dto.getEmail()) && profesorRepository.existsByEmail(dto.getEmail())) {
 			throw new RuntimeException("Ya existe un profesor con el email: " + dto.getEmail());
 		}
 
-		// Validar CURP única (si cambió)
-		if (!p.getCurp().equals(dto.getCurp()) && profesorRepository.existsByCurp(dto.getCurp())) {
+		// Validar CURP única (si cambió) - 👈 CORREGIDO CON Objects.equals
+		if (!java.util.Objects.equals(p.getCurp(), dto.getCurp()) && profesorRepository.existsByCurp(dto.getCurp())) {
 			throw new RuntimeException("Ya existe un profesor con la CURP: " + dto.getCurp());
 		}
 
-		// Validar RFC único (si cambió)
-		if (!p.getRfc().equals(dto.getRfc()) && profesorRepository.existsByRfc(dto.getRfc())) {
+		// Validar RFC único (si cambió) - 👈 CORREGIDO CON Objects.equals
+		if (!java.util.Objects.equals(p.getRfc(), dto.getRfc()) && profesorRepository.existsByRfc(dto.getRfc())) {
 			throw new RuntimeException("Ya existe un profesor con el RFC: " + dto.getRfc());
 		}
 
-		// Validar NSS único (si cambió)
-		if (!p.getNss().equals(dto.getNss()) && profesorRepository.existsByNss(dto.getNss())) {
+		// Validar NSS único (si cambió) - 👈 CORREGIDO CON Objects.equals
+		if (!java.util.Objects.equals(p.getNss(), dto.getNss()) && profesorRepository.existsByNss(dto.getNss())) {
 			throw new RuntimeException("Ya existe un profesor con el NSS: " + dto.getNss());
 		}
 
@@ -134,7 +134,6 @@ public class ProfesorServiceImpl implements ProfesorService {
 		Profesor actualizado = profesorRepository.save(p);
 		return profesorMapper.toResponseDTO(actualizado);
 	}
-
 	@Override
 	public void eliminar(Long id) {
 		Profesor p = profesorRepository.findById(id).orElseThrow(() -> new ProfesorNoEncontradoException(id));
