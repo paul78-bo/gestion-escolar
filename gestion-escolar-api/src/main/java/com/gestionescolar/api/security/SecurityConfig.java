@@ -44,15 +44,20 @@ public class SecurityConfig {
 				// 1. Deshabilitar CSRF
 				.csrf(csrf -> csrf.disable())
 
-				// 2. Ya NO configuramos CORS aquí, lo hace el bean de abajo (corsFilterRegistration)
+				// 2. CORS (Lo maneja el bean de abajo)
 
 				// 3. Autorización
 				.authorizeHttpRequests(auth -> auth
 						// Permitir preflight OPTIONS
 						.requestMatchers(org.springframework.http.HttpMethod.OPTIONS, "/**").permitAll()
-						// Rutas públicas
+						
+						// 👇 AGREGAMOS LAS RUTAS DE RECUPERACIÓN AQUÍ
+						.requestMatchers("/api/auth/forgot-password", "/api/auth/reset-password", "/api/auth/validate-shortId").permitAll()
+						
+						// Rutas públicas existentes
 						.requestMatchers("/api/auth/**", "/api/ping", "/swagger-ui/**", "/v3/api-docs/**",
 								"/swagger-ui.html", "/h2-console/**").permitAll()
+								
 						// Todo lo demás requiere autenticación
 						.anyRequest().authenticated())
 
@@ -88,7 +93,7 @@ public class SecurityConfig {
 		source.registerCorsConfiguration("/**", config);
 
 		FilterRegistrationBean<CorsFilter> bean = new FilterRegistrationBean<>(new CorsFilter(source));
-		bean.setOrder(Ordered.HIGHEST_PRECEDENCE); // 👈 Se ejecuta ANTES que todo
+		bean.setOrder(Ordered.HIGHEST_PRECEDENCE);
 		return bean;
 	}
 

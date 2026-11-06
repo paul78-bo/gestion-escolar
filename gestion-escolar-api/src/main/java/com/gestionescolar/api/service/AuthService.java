@@ -5,8 +5,8 @@ import com.gestionescolar.api.dto.LoginResponseDTO;
 import com.gestionescolar.api.dto.RegisterRequestDTO;
 import com.gestionescolar.api.entity.Usuario;
 import com.gestionescolar.api.enums.Rol;
-import com.gestionescolar.api.repository.AlumnoRepository; // 👈 NUEVO
-import com.gestionescolar.api.repository.ProfesorRepository; // 👈 NUEVO
+import com.gestionescolar.api.repository.AlumnoRepository;
+import com.gestionescolar.api.repository.ProfesorRepository;
 import com.gestionescolar.api.repository.UsuarioRepository;
 import com.gestionescolar.api.security.JwtService;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -25,8 +25,8 @@ public class AuthService {
     private final JwtService jwtService;
     private final AuthenticationManager authenticationManager;
     private final UserDetailsService userDetailsService;
-    private final AlumnoRepository alumnoRepository;     // 👈 NUEVO
-    private final ProfesorRepository profesorRepository; // 👈 NUEVO
+    private final AlumnoRepository alumnoRepository;
+    private final ProfesorRepository profesorRepository;
 
     // 1. ACTUALIZAMOS EL CONSTRUCTOR
     public AuthService(UsuarioRepository usuarioRepository,
@@ -34,15 +34,15 @@ public class AuthService {
                        JwtService jwtService,
                        AuthenticationManager authenticationManager,
                        UserDetailsService userDetailsService,
-                       AlumnoRepository alumnoRepository,     // 👈 NUEVO
-                       ProfesorRepository profesorRepository) { // 👈 NUEVO
+                       AlumnoRepository alumnoRepository,
+                       ProfesorRepository profesorRepository) {
         this.usuarioRepository = usuarioRepository;
         this.passwordEncoder = passwordEncoder;
         this.jwtService = jwtService;
         this.authenticationManager = authenticationManager;
         this.userDetailsService = userDetailsService;
-        this.alumnoRepository = alumnoRepository;     // 👈 NUEVO
-        this.profesorRepository = profesorRepository; // 👈 NUEVO
+        this.alumnoRepository = alumnoRepository;
+        this.profesorRepository = profesorRepository;
     }
 
     // ==========================================
@@ -50,7 +50,6 @@ public class AuthService {
     // ==========================================
     @Transactional
     public LoginResponseDTO register(RegisterRequestDTO dto) {
-        // Validar duplicados
         if (usuarioRepository.existsByUsername(dto.getUsername())) {
             throw new RuntimeException("El username ya está en uso: " + dto.getUsername());
         }
@@ -58,7 +57,6 @@ public class AuthService {
             throw new RuntimeException("El email ya está en uso: " + dto.getEmail());
         }
 
-        // Crear usuario
         Usuario usuario = new Usuario();
         usuario.setUsername(dto.getUsername());
         usuario.setPassword(passwordEncoder.encode(dto.getPassword()));
@@ -68,17 +66,15 @@ public class AuthService {
 
         usuarioRepository.save(usuario);
 
-        // Generar token
         UserDetails userDetails = userDetailsService.loadUserByUsername(usuario.getUsername());
         String token = jwtService.generateToken(userDetails);
 
-        // 2. ACTUALIZAMOS LA RESPUESTA (Pasamos null porque es un registro nuevo)
         return new LoginResponseDTO(
                 token,
                 usuario.getUsername(),
                 usuario.getRol().name(),
                 jwtService.getJwtExpiration(),
-                null // alumnoId (es null porque apenas se está registrando)
+                null
         );
     }
 
@@ -87,22 +83,18 @@ public class AuthService {
     // ==========================================
     @Transactional(readOnly = true)
     public LoginResponseDTO login(LoginRequestDTO dto) {
-        // Autenticar
         authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(dto.getUsername(), dto.getPassword())
         );
 
-        // Cargar usuario
         Usuario usuario = usuarioRepository.findByUsername(dto.getUsername())
                 .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
 
-        // Generar token
         UserDetails userDetails = userDetailsService.loadUserByUsername(usuario.getUsername());
         String token = jwtService.generateToken(userDetails);
 
-        // 3. LÓGICA PARA BUSCAR EL ID DEL ALUMNO O PROFESOR 👈
         Long alumnoId = null;
-        Long profesorId = null; // (Lo dejamos listo para el futuro)
+        Long profesorId = null;
 
         if (usuario.getRol() == Rol.ALUMNO) {
             alumnoId = alumnoRepository.findByUsuario_Id(usuario.getId())
@@ -114,13 +106,12 @@ public class AuthService {
                     .orElse(null);
         }
 
-        // 4. RETORNAMOS LA RESPUESTA CON EL ALUMNO ID 👈
         return new LoginResponseDTO(
                 token,
                 usuario.getUsername(),
                 usuario.getRol().name(),
                 jwtService.getJwtExpiration(),
-                alumnoId // Aquí va el ID que encontramos (o null si es admin)
+                alumnoId
         );
     }
 }

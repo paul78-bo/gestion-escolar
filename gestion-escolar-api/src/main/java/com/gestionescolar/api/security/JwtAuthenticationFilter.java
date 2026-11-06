@@ -33,34 +33,41 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             @NonNull FilterChain filterChain
     ) throws ServletException, IOException {
 
-        // 1. Extraer el header Authorization
+        // 👇 1. NUEVA VALIDACIÓN: Ignorar el filtro para rutas públicas de recuperación
+        String path = request.getRequestURI();
+        if (path.startsWith("/api/auth/") || path.startsWith("/reset-password") || path.startsWith("/api/auth/validate-shortId")) {
+            filterChain.doFilter(request, response);
+            return;
+        }
+
+        // 2. Extraer el header Authorization
         final String authHeader = request.getHeader("Authorization");
         final String jwt;
         final String username;
 
-        // 2. Si no hay header o no empieza con "Bearer ", continuar
+        // 3. Si no hay header o no empieza con "Bearer ", continuar
         if (authHeader == null || !authHeader.startsWith("Bearer ")) {
             filterChain.doFilter(request, response);
             return;
         }
 
-        // 3. Extraer el token
+        // 4. Extraer el token
         jwt = authHeader.substring(7);
 
         try {
-            // 4. Extraer el username
+            // 5. Extraer el username
             username = jwtService.extractUsername(jwt);
 
-            // 5. Si hay username y no hay autenticación en el contexto
+            // 6. Si hay username y no hay autenticación en el contexto
             if (username != null && SecurityContextHolder.getContext().getAuthentication() == null) {
                 
-                // 6. Cargar el usuario
+                // 7. Cargar el usuario
                 UserDetails userDetails = this.userDetailsService.loadUserByUsername(username);
 
-                // 7. Validar el token
+                // 8. Validar el token
                 if (jwtService.isTokenValid(jwt, userDetails)) {
                     
-                    // 8. Crear la autenticación
+                    // 9. Crear la autenticación
                     UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(
                             userDetails,
                             null,
@@ -68,7 +75,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                     );
                     authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
 
-                    // 9. Establecer la autenticación en el contexto
+                    // 10. Establecer la autenticación en el contexto
                     SecurityContextHolder.getContext().setAuthentication(authToken);
                 }
             }

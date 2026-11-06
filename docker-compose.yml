@@ -22,8 +22,8 @@ services:
       context: ./gestion-escolar-api
       dockerfile: Dockerfile
     container_name: gestion_escolar_backend
-    ports:
-      - "8083:8083"
+    #ports:
+    #  - "8083:8083"
     environment:
       DB_URL: jdbc:mysql://db:3306/gestion_escolar_dbd?useSSL=false&serverTimezone=America/Mexico_City&allowPublicKeyRetrieval=true
       DB_USERNAME: root
