@@ -97,17 +97,11 @@ public class AsignacionServiceImpl implements AsignacionService {
         Profesor profesor = profesorRepository.findById(dto.getProfesorId())
                 .orElseThrow(() -> new ProfesorNoEncontradoException(dto.getProfesorId()));
 
-        // 4. Validar que no exista ya una asignación del mismo grupo+materia
-//        if (asignacionRepository.existsByGrupoIdAndMateriaId(dto.getGrupoId(), dto.getMateriaId())) {
-//            throw new RuntimeException("Ya existe una asignación de la materia " + materia.getNombre()
-//                    + " para el grupo " + grupo.getNombre());
-//        }
-
-        // 5. Crear asignación
+        // 4. CREAMOS LA ASIGNACIÓN DIRECTAMENTE (Sin validar duplicados de profesor/materia)
         Asignacion a = asignacionMapper.toEntity(dto, grupo, materia, profesor);
         Asignacion guardada = asignacionRepository.save(a);
 
-        // 6. Auto-crear calificaciones para todos los alumnos ya inscritos en el grupo
+        // 5. Auto-crear calificaciones para todos los alumnos ya inscritos en el grupo
         List<Inscripcion> inscripciones = inscripcionRepository.findActivasByGrupoId(grupo.getId());
         for (Inscripcion i : inscripciones) {
             for (int periodo = 1; periodo <= 3; periodo++) {
@@ -125,7 +119,9 @@ public class AsignacionServiceImpl implements AsignacionService {
         }
         return asignacionMapper.toResponseDTO(guardada);
     }
-
+    
+    
+    
     @Override
     public AsignacionResponseDTO actualizar(Long id, AsignacionRequestDTO dto) {
         Asignacion a = asignacionRepository.findById(id)

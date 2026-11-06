@@ -114,12 +114,16 @@ function cerrarModal() {
 
 async function guardarAsignacion(e) {
     e.preventDefault();
-    const id = document.getElementById('asignacionId').value;
+    
+    // Convertimos a entero seguro. Si está vacío, mandamos null para que la validación lo atrape.
+    const grupoVal = document.getElementById('grupoId').value;
+    const materiaVal = document.getElementById('materiaId').value;
+    const profesorVal = document.getElementById('profesorId').value;
 
     const asignacion = {
-        grupoId: parseInt(document.getElementById('grupoId').value),
-        materiaId: parseInt(document.getElementById('materiaId').value),
-        profesorId: parseInt(document.getElementById('profesorId').value),
+        grupoId: grupoVal ? parseInt(grupoVal) : null,
+        materiaId: materiaVal ? parseInt(materiaVal) : null,
+        profesorId: profesorVal ? parseInt(profesorVal) : null,
         diaSemana: document.getElementById('diaSemana').value || null,
         horaInicio: document.getElementById('horaInicio').value || null,
         horaFin: document.getElementById('horaFin').value || null,
@@ -138,6 +142,8 @@ async function guardarAsignacion(e) {
         return;
     }
 
+    const id = document.getElementById('asignacionId').value;
+
     try {
         let url = `${API_URL}/api/asignaciones`;
         let method = 'POST';
@@ -150,14 +156,8 @@ async function guardarAsignacion(e) {
             const errorText = await response.text();
             try {
                 const errorJson = JSON.parse(errorText);
-                if (errorJson.validationErrors) {
-                    const detalle = Object.entries(errorJson.validationErrors)
-                        .map(([campo, msg]) => `  • ${campo}: ${msg}`).join('\n');
-                    throw new Error(`Error de validación:\n\n${detalle}`);
-                }
                 throw new Error(errorJson.message || 'Error al guardar');
             } catch (e) {
-                if (e.message.includes('Error de validación')) throw e;
                 throw new Error('Error ' + response.status + ': ' + errorText);
             }
         }
@@ -212,7 +212,6 @@ async function buscar() {
         if (asignaciones.length === 0) {
             tbody.innerHTML = '<tr><td colspan="7" style="text-align: center;">No se encontraron resultados</td></tr>';
         } else {
-            // 👇 AQUÍ ESTABA EL ERROR, AHORA YA PINTA DÍA Y HORARIO
             tbody.innerHTML = asignaciones.map(a => `
                 <tr>
                     <td>${a.id}</td>
