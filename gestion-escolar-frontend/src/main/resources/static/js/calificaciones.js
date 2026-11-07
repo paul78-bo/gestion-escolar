@@ -56,6 +56,8 @@ async function cargarGruposDelAlumno(alumnoId) {
     // Obtenemos la inscripción del alumno para saber a qué grupo pertenece
     const r = await fetchConAuth(`${API_URL}/api/inscripciones/alumno/${alumnoId}`);
     if (!r || !r.ok) return;
+	
+
     const inscripciones = await r.json();
 
     const selectGrupo = document.getElementById('selectGrupo');
@@ -141,20 +143,23 @@ async function guardarCalificacion() {
         const response = await fetchConAuth(url, { method, body: JSON.stringify(dto) });
         if (!response || !response.ok) throw new Error('Error al guardar');
 
+        // Si era nueva, actualizamos el ID
         if (!calificacionIdActual) {
             const resGuardada = await response.json();
             calificacionIdActual = resGuardada.id;
         }
 
-        // Recargar vista previa de la boleta
-        await cargarVistaPreviaBoleta(alumnoSeleccionado.alumnoId);
-        alert('✅ Calificación guardada y boleta actualizada');
+        // 👇 FORZAMOS LA ACTUALIZACIÓN DE LA VISTA PREVIA
+        // Esperamos un momento a que el backend procese y luego recargamos
+        setTimeout(async () => {
+            await cargarVistaPreviaBoleta(alumnoSeleccionado.alumnoId);
+            alert('✅ Calificación guardada y boleta actualizada');
+        }, 300); // 300 milisegundos de margen
 
     } catch (error) {
         alert('❌ ' + error.message);
     }
 }
-
 // --- VISTA 3: LÓGICA DE LA BOLETA ---
 // Lógica de la tabla de la boleta (derecha)
 // --- VISTA 3: LÓGICA DE LA BOLETA ---
