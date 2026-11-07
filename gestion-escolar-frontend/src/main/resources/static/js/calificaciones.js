@@ -176,8 +176,8 @@ async function cargarVistaPreviaBoleta(alumnoId) {
         data.camposFormativos.forEach(campo => {
             campo.materias.forEach(m => {
                 let nombreOriginal = m.nombreMateria || m.nombre || "";
-                // Normalizamos: a minúsculas y quitamos acentos para que "Inglés" e "Ingles" sean iguales
-                let nombre = nombreOriginal.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+                // Normalizamos a minúsculas
+                let nombre = nombreOriginal.toLowerCase();
 
                 const pintarPV = (id, t1, t2, t3) => {
                     document.getElementById(`pv-t1-${id}`).textContent = (t1 != null) ? Number(t1).toFixed(1) : '-';
@@ -185,21 +185,22 @@ async function cargarVistaPreviaBoleta(alumnoId) {
                     document.getElementById(`pv-t3-${id}`).textContent = (t3 != null) ? Number(t3).toFixed(1) : '-';
                 };
 
-                // Usamos expresiones regulares para atrapar cualquier variante
-                if (nombre.match(/espanol/)) pintarPV('espanol', m.trimestre1, m.trimestre2, m.trimestre3);
-                else if (nombre.match(/ingles/)) pintarPV('ingles', m.trimestre1, m.trimestre2, m.trimestre3);
-                else if (nombre.match(/artes/)) pintarPV('artes', m.trimestre1, m.trimestre2, m.trimestre3);
-                else if (nombre.match(/matematic/)) pintarPV('matematicas', m.trimestre1, m.trimestre2, m.trimestre3);
-                else if (nombre.match(/biolog/)) pintarPV('biologia', m.trimestre1, m.trimestre2, m.trimestre3);
-                else if (nombre.match(/geograf/)) pintarPV('geografia', m.trimestre1, m.trimestre2, m.trimestre3);
-                else if (nombre.match(/historia/)) pintarPV('historia', m.trimestre1, m.trimestre2, m.trimestre3);
-                else if (nombre.match(/civica|etica|formacion/)) pintarPV('formacion', m.trimestre1, m.trimestre2, m.trimestre3);
-                else if (nombre.match(/tecnolog|mecatronica/)) pintarPV('tecnologia', m.trimestre1, m.trimestre2, m.trimestre3);
-                else if (nombre.match(/fisica|educacion/)) pintarPV('educacion', m.trimestre1, m.trimestre2, m.trimestre3);
+                // 👇 SOLUCIÓN: Usamos slices para buscar cualquier variante (incluso si perdió letras)
+                // Buscamos las primeras letras o partes únicas de la palabra
+                if (nombre.includes('espa') || nombre.includes('espa')) pintarPV('espanol', m.trimestre1, m.trimestre2, m.trimestre3);
+                else if (nombre.includes('ingl')) pintarPV('ingles', m.trimestre1, m.trimestre2, m.trimestre3);
+                else if (nombre.includes('arte')) pintarPV('artes', m.trimestre1, m.trimestre2, m.trimestre3);
+                else if (nombre.includes('mate')) pintarPV('matematicas', m.trimestre1, m.trimestre2, m.trimestre3);
+                else if (nombre.includes('biol')) pintarPV('biologia', m.trimestre1, m.trimestre2, m.trimestre3);
+                else if (nombre.includes('geog')) pintarPV('geografia', m.trimestre1, m.trimestre2, m.trimestre3);
+                else if (nombre.includes('hist')) pintarPV('historia', m.trimestre1, m.trimestre2, m.trimestre3);
+                else if (nombre.includes('form') || nombre.includes('etica') || nombre.includes('civ')) pintarPV('formacion', m.trimestre1, m.trimestre2, m.trimestre3);
+                else if (nombre.includes('tecn') || nombre.includes('meca')) pintarPV('tecnologia', m.trimestre1, m.trimestre2, m.trimestre3);
+                else if (nombre.includes('fis') || nombre.includes('educ')) pintarPV('educacion', m.trimestre1, m.trimestre2, m.trimestre3);
             });
         });
 
-        // Pintamos los promedios a ver que sale
+        // Pintamos los promedios
         document.getElementById('pv-prom-t1').textContent = (data.promedioT1 != null) ? Number(data.promedioT1).toFixed(1) : 'En curso';
         document.getElementById('pv-prom-t2').textContent = (data.promedioT2 != null) ? Number(data.promedioT2).toFixed(1) : 'En curso';
         document.getElementById('pv-prom-t3').textContent = (data.promedioT3 != null) ? Number(data.promedioT3).toFixed(1) : 'En curso';
