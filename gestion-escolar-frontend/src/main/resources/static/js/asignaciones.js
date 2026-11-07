@@ -153,20 +153,48 @@ async function guardarAsignacion(e) {
 
     try {
         if (id) {
-            // En edición, solo se actualiza el registro específico (usamos la primera materia y día)
-            const asignacion = {
+            // MODO EDICIÓN: Primero actualizamos la asignación original
+            const primeraMateriaId = materiasSeleccionadas[0];
+            const primerDia = diasSeleccionados[0];
+            
+            const asignacionActualizar = {
                 grupoId: parseInt(grupoVal),
-                materiaId: materiasSeleccionadas[0],
+                materiaId: primeraMateriaId,
                 profesorId: parseInt(profesorVal),
-                diaSemana: diasSeleccionados[0],
+                diaSemana: primerDia,
                 horaInicio, horaFin,
                 activo: true
             };
-            const response = await fetchConAuth(`${API_URL}/api/asignaciones/${id}`, { method: 'PUT', body: JSON.stringify(asignacion) });
-            if (!response || !response.ok) throw new Error('Error al actualizar');
-            mostrarMensaje('✅ Asignación actualizada');
+            
+            const responseUpdate = await fetchConAuth(`${API_URL}/api/asignaciones/${id}`, { method: 'PUT', body: JSON.stringify(asignacionActualizar) });
+            
+            if (!responseUpdate || !responseUpdate.ok) throw new Error('Error al actualizar la asignación principal');
+
+            // Luego, si se seleccionaron MÁS materias o MÁS días, los creamos como nuevos (POST)
+            let creados = 0;
+            
+            for (const materiaId of materiasSeleccionadas) {
+                for (const dia of diasSeleccionados) {
+                    // Saltamos la combinación que ya actualizamos
+                    if (materiaId === primeraMateriaId && dia === primerDia) continue;
+                    
+                    const nuevaAsignacion = {
+                        grupoId: parseInt(grupoVal),
+                        materiaId: materiaId,
+                        profesorId: parseInt(profesorVal),
+                        diaSemana: dia,
+                        horaInicio, horaFin,
+                        activo: true
+                    };
+                    const responseCreate = await fetchConAuth(`${API_URL}/api/asignaciones`, { method: 'POST', body: JSON.stringify(nuevaAsignacion) });
+                    if (responseCreate && responseCreate.ok) creados++;
+                }
+            }
+            
+            mostrarMensaje(`✅ Asignación actualizada y ${creados} nuevas agregadas.`);
+            
         } else {
-            // En creación: Combinatoria de Materias x Días
+            // MODO CREACIÓN: Combinatoria de Materias x Días
             let totalPeticiones = materiasSeleccionadas.length * diasSeleccionados.length;
             let exitos = 0;
             
@@ -184,7 +212,7 @@ async function guardarAsignacion(e) {
                     if (response && response.ok) exitos++;
                 }
             }
-            mostrarMensaje(`✅ Se crearon ${exitos} asignaciones (de ${totalPeticiones} intentos)`);
+            mostrarMensaje(`✅ Se crearon ${exitos} asignaciones exitosamente.`);
         }
 
         cerrarModal();
