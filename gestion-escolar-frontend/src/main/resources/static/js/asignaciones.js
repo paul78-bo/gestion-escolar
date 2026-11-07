@@ -27,9 +27,18 @@ async function cargarMaterias() {
     const r = await fetchConAuth(`${API_URL}/api/materias/activas`);
     if (!r || !r.ok) return;
     const materias = await r.json();
-    document.getElementById('materiaId').innerHTML = '<option value="">-- Seleccionar Materia --</option>' +
-        materias.map(m => `<option value="${m.id}">${m.codigo} - ${m.nombre}</option>`).join('');
+    
+    // Llenamos el contenedor con checkboxes
+    document.getElementById('materiasCheckboxes').innerHTML = materias.map(m => `
+        <div style="margin-bottom: 5px;">
+            <label style="display: flex; align-items: center; cursor: pointer; font-weight: normal;">
+                <input type="checkbox" name="materiasSeleccionadas" value="${m.id}" style="margin-right: 10px; width: 18px; height: 18px;">
+                ${m.codigo} - ${m.nombre}
+            </label>
+        </div>
+    `).join('');
 }
+
 
 async function cargarProfesores() {
     const r = await fetchConAuth(`${API_URL}/api/profesores/activos`);
@@ -91,19 +100,30 @@ function abrirModal(asignacion = null) {
     const titulo = document.getElementById('modalTitulo');
     const form = document.getElementById('asignacionForm');
     form.reset();
+    
+    // Desmarcar todos los checkboxes primero
+    document.querySelectorAll('input[name="materiasSeleccionadas"]').forEach(cb => cb.checked = false);
 
     if (asignacion) {
         titulo.textContent = 'Editar Asignación';
         document.getElementById('asignacionId').value = asignacion.id;
         document.getElementById('grupoId').value = asignacion.grupoId || '';
-        document.getElementById('materiaId').value = asignacion.materiaId || '';
         document.getElementById('profesorId').value = asignacion.profesorId || '';
         document.getElementById('diaSemana').value = asignacion.diaSemana || '';
         document.getElementById('horaInicio').value = asignacion.horaInicio || '';
         document.getElementById('horaFin').value = asignacion.horaFin || '';
+        
+        // Marcar el checkbox de la materia que se está editando
+        const checkbox = document.querySelector(`input[name="materiasSeleccionadas"][value="${asignacion.materiaId}"]`);
+        if (checkbox) checkbox.checked = true;
+        
+        // Deshabilitar los checkboxes en modo edición (solo se edita una a la vez)
+        document.querySelectorAll('input[name="materiasSeleccionadas"]').forEach(cb => cb.disabled = true);
     } else {
         titulo.textContent = 'Nueva Asignación';
         document.getElementById('asignacionId').value = '';
+        // Habilitar checkboxes en modo creación
+        document.querySelectorAll('input[name="materiasSeleccionadas"]').forEach(cb => cb.disabled = false);
     }
     modal.style.display = 'flex';
 }
@@ -114,62 +134,63 @@ function cerrarModal() {
 
 async function guardarAsignacion(e) {
     e.preventDefault();
-    
-    // Convertimos a entero seguro. Si está vacío, mandamos null para que la validación lo atrape.
+    const id = document.getElementById('asignacionId').value;
     const grupoVal = document.getElementById('grupoId').value;
-    const materiaVal = document.getElementById('materiaId').value;
     const profesorVal = document.getElementById('profesorId').value;
-
-    const asignacion = {
-        grupoId: grupoVal ? parseInt(grupoVal) : null,
-        materiaId: materiaVal ? parseInt(materiaVal) : null,
-        profesorId: profesorVal ? parseInt(profesorVal) : null,
-        diaSemana: document.getElementById('diaSemana').value || null,
-        horaInicio: document.getElementById('horaInicio').value || null,
-        horaFin: document.getElementById('horaFin').value || null,
-        activo: true
-    };
-
-    const errores = [];
-    if (!asignacion.grupoId) errores.push('El grupo es obligatorio');
-    if (!asignacion.materiaId) errores.push('La materia es obligatoria');
-    if (!asignacion.profesorId) errores.push('El profesor es obligatorio');
-    if (!asignacion.diaSemana) errores.push('El día es obligatorio');
-    if (!asignacion.horaInicio || !asignacion.horaFin) errores.push('El horario es obligatorio');
     
-    if (errores.length > 0) {
-        alert('❌ Errores:\n\n' + errores.join('\n'));
+    // Obtener todas las materias seleccionadas
+    const checkboxesSeleccionados = Array.from(document.querySelectorAll('input[name="materiasSeleccionadas"]:checked')).map(cb => parseInt(cb.value));
+    
+    if (!grupoVal || !profesorVal || checkboxesSeleccionados.length === 0) {
+        alert('❌ Debes seleccionar un grupo, un profesor y al menos una materia.');
+        return;
+    }
+    
+    const diaSemana = document.getElementById('diaSemana').value || null;
+    const horaInicio = document.getElementById('horaInicio').value || null;
+    const horaFin = document.getElementById('horaFin').value || null;
+
+    if (!diaSemana || !horaInicio || !horaFin) {
+        alert('❌ El día y el horario son obligatorios.');
         return;
     }
 
-    const id = document.getElementById('asignacionId').value;
-
     try {
-        let url = `${API_URL}/api/asignaciones`;
-        let method = 'POST';
-        if (id) { url += `/${id}`; method = 'PUT'; }
-
-        const response = await fetchConAuth(url, { method, body: JSON.stringify(asignacion) });
-        if (!response) return;
-
-        if (!response.ok) {
-            const errorText = await response.text();
-            try {
-                const errorJson = JSON.parse(errorText);
-                throw new Error(errorJson.message || 'Error al guardar');
-            } catch (e) {
-                throw new Error('Error ' + response.status + ': ' + errorText);
+        if (id) {
+            // MODO EDICIÓN: Solo actualizamos una asignación (la primera materia seleccionada)
+            const asignacion = {
+                grupoId: parseInt(grupoVal),
+                materiaId: checkboxesSeleccionados[0],
+                profesorId: parseInt(profesorVal),
+                diaSemana, horaInicio, horaFin,
+                activo: true
+            };
+            const response = await fetchConAuth(`${API_URL}/api/asignaciones/${id}`, { method: 'PUT', body: JSON.stringify(asignacion) });
+            if (!response || !response.ok) throw new Error('Error al actualizar');
+            mostrarMensaje('✅ Asignación actualizada');
+        } else {
+            // MODO CREACIÓN: Hacemos una petición por cada materia seleccionada
+            let exitos = 0;
+            for (const materiaId of checkboxesSeleccionados) {
+                const asignacion = {
+                    grupoId: parseInt(grupoVal),
+                    materiaId: materiaId,
+                    profesorId: parseInt(profesorVal),
+                    diaSemana, horaInicio, horaFin,
+                    activo: true
+                };
+                const response = await fetchConAuth(`${API_URL}/api/asignaciones`, { method: 'POST', body: JSON.stringify(asignacion) });
+                if (response && response.ok) exitos++;
             }
+            mostrarMensaje(`✅ Se crearon ${exitos} asignaciones exitosamente`);
         }
 
         cerrarModal();
         cargarAsignaciones(paginaActual);
-        mostrarMensaje(id ? '✅ Asignación actualizada' : '✅ Asignación creada');
     } catch (error) {
         alert('❌ ' + error.message);
     }
 }
-
 async function editarAsignacion(id) {
     try {
         const response = await fetchConAuth(`${API_URL}/api/asignaciones/${id}`);

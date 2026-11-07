@@ -1,132 +1,149 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <meta charset="UTF-8">
-    <title>Asignaciones - Gestión Escolar</title>
-    <link rel="stylesheet" href="css/styles.css">
+<meta charset="UTF-8">
+<title>Asignaciones - Gestión Escolar</title>
+<link rel="stylesheet" href="css/styles.css">
 </head>
 <body>
-    <div class="sidebar">
-        <h2>🎓 Gestión Escolar</h2>
-        <a href="dashboard.html">📊 Dashboard</a>
-        <a href="alumnos.html">👥 Alumnos</a>
-        <a href="profesores.html">👨‍🏫 Profesores</a>
-        <a href="materias.html">📚 Materias</a>
-        <a href="grupos.html">🏫 Grupos</a>
-        <a href="ciclos.html">📅 Ciclos</a>
-        <a href="asignaciones.html" class="active">📋 Asignaciones</a>
-        <a href="inscripciones.html">📝 Inscripciones</a>
-        <a href="calificaciones.html">📊 Calificaciones</a>
-        <a href="#" onclick="logout()">🚪 Cerrar Sesión</a>
-    </div>
+	<div class="sidebar">
+		<h2>🎓 Gestión Escolar</h2>
+		<a href="dashboard.html">📊 Dashboard</a> <a href="alumnos.html">👥
+			Alumnos</a> <a href="profesores.html">👨‍🏫 Profesores</a> <a
+			href="materias.html">📚 Materias</a> <a href="grupos.html">🏫
+			Grupos</a> <a href="ciclos.html">📅 Ciclos</a> <a
+			href="asignaciones.html" class="active">📋 Asignaciones</a> <a
+			href="inscripciones.html">📝 Inscripciones</a> <a
+			href="calificaciones.html">📊 Calificaciones</a> <a href="#"
+			onclick="logout()">🚪 Cerrar Sesión</a>
+	</div>
 
-    <div class="content">
-        <div class="banner">
-            <h2>📋 Gestión de Asignaciones</h2>
-            <div>Bienvenido, <strong id="usernameDisplay"></strong> | <span id="rolDisplay"></span></div>
-        </div>
+	<div class="content">
+		<div class="banner">
+			<h2>📋 Gestión de Asignaciones</h2>
+			<div>
+				Bienvenido, <strong id="usernameDisplay"></strong> | <span
+					id="rolDisplay"></span>
+			</div>
+		</div>
 
-        <div id="mensaje" class="alert" style="display: none;"></div>
+		<div id="mensaje" class="alert" style="display: none;"></div>
 
-        <div style="margin-bottom: 15px; display: flex; justify-content: flex-end; gap: 10px;">
-            <a href="horario.html" class="btn btn-primary" style="text-decoration: none; padding: 10px 20px;">🗓️ Ver Horario Visual</a>
-            <button class="btn btn-success" onclick="abrirModal()">➕ Nueva Asignación</button>
-        </div>
+		<div
+			style="margin-bottom: 15px; display: flex; justify-content: flex-end; gap: 10px;">
+			<a href="horario.html" class="btn btn-primary"
+				style="text-decoration: none; padding: 10px 20px;">🗓️ Ver
+				Horario Visual</a>
+			<button class="btn btn-success" onclick="abrirModal()">➕
+				Nueva Asignación</button>
+		</div>
 
-        <div class="card">
-            <div style="display: flex; gap: 10px;">
-                <input type="text" id="busqueda" class="form-control" placeholder="Buscar por grupo, materia, profesor...">
-                <button class="btn btn-primary" onclick="buscar()">🔍 Buscar</button>
-                <button class="btn btn-secondary" onclick="limpiarBusqueda()">❌ Limpiar</button>
-            </div>
-        </div>
+		<div class="card">
+			<div style="display: flex; gap: 10px;">
+				<input type="text" id="busqueda" class="form-control"
+					placeholder="Buscar por grupo, materia, profesor...">
+				<button class="btn btn-primary" onclick="buscar()">🔍
+					Buscar</button>
+				<button class="btn btn-secondary" onclick="limpiarBusqueda()">❌
+					Limpiar</button>
+			</div>
+		</div>
 
-        <div class="card">
-            <table>
-                <thead>
-                    <tr>
-                        <th>ID</th>
-                        <th>Grupo</th>
-                        <th>Materia</th>
-                        <th>Profesor</th>
-                        <th>Día</th>
-                        <th>Horario</th>
-                        <th>Acciones</th>
-                    </tr>
-                </thead>
-                <tbody id="tablaBody">
-                    <tr><td colspan="7" style="text-align: center;">Cargando...</td></tr>
-                </tbody>
-            </table>
+		<div class="card">
+			<table>
+				<thead>
+					<tr>
+						<th>ID</th>
+						<th>Grupo</th>
+						<th>Materia</th>
+						<th>Profesor</th>
+						<th>Día</th>
+						<th>Horario</th>
+						<th>Acciones</th>
+					</tr>
+				</thead>
+				<tbody id="tablaBody">
+					<tr>
+						<td colspan="7" style="text-align: center;">Cargando...</td>
+					</tr>
+				</tbody>
+			</table>
 
-            <div style="margin-top: 15px; text-align: center;">
-                <button class="btn btn-secondary" id="btnAnterior" onclick="paginaAnterior()">← Anterior</button>
-                <span style="margin: 0 15px;">Página <strong id="paginaActual">0</strong> de <strong id="totalPaginas">0</strong></span>
-                <button class="btn btn-secondary" id="btnSiguiente" onclick="paginaSiguiente()">Siguiente →</button>
-            </div>
-        </div>
-    </div>
+			<div style="margin-top: 15px; text-align: center;">
+				<button class="btn btn-secondary" id="btnAnterior"
+					onclick="paginaAnterior()">← Anterior</button>
+				<span style="margin: 0 15px;">Página <strong
+					id="paginaActual">0</strong> de <strong id="totalPaginas">0</strong></span>
+				<button class="btn btn-secondary" id="btnSiguiente"
+					onclick="paginaSiguiente()">Siguiente →</button>
+			</div>
+		</div>
+	</div>
 
-    <!-- MODAL CORREGIDO -->
-    <div id="modal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1000; justify-content: center; align-items: center;">
-        <div class="card" style="width: 90%; max-width: 600px;">
-            <h2 id="modalTitulo" style="margin-bottom: 20px;">Nueva Asignación</h2>
-            <form id="asignacionForm">
-                <input type="hidden" id="asignacionId">
+	<!-- MODAL CORREGIDO -->
+	<div id="modal"
+		style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.5); z-index: 1000; justify-content: center; align-items: center;">
+		<div class="card" style="width: 90%; max-width: 600px;">
+			<h2 id="modalTitulo" style="margin-bottom: 20px;">Nueva
+				Asignación</h2>
+			<form id="asignacionForm">
+				<input type="hidden" id="asignacionId">
 
-                <div class="form-group">
-                    <label>Grupo *</label>
-                    <select id="grupoId" class="form-control" required>
-                        <option value="">-- Cargando grupos... --</option>
-                    </select>
-                </div>
+				<div class="form-group">
+					<label>Grupo *</label> <select id="grupoId" class="form-control"
+						required>
+						<option value="">-- Cargando grupos... --</option>
+					</select>
+				</div>
 
-                <div class="form-group">
-                    <label>Materia *</label>
-                    <select id="materiaId" class="form-control" required>
-                        <option value="">-- Cargando materias... --</option>
-                    </select>
-                </div>
+				<div class="form-group">
+					<label>Materias (Selecciona una o varias) *</label>
+					<div id="materiasCheckboxes"
+						style="max-height: 150px; overflow-y: auto; border: 1px solid #ccc; padding: 10px; border-radius: 4px;">
+						<!-- Aquí se inyectarán los checkboxes con JS -->
+					</div>
+				</div>
 
-                <div class="form-group">
-                    <label>Profesor *</label>
-                    <select id="profesorId" class="form-control" required>
-                        <option value="">-- Cargando profesores... --</option>
-                    </select>
-                </div>
+				<div class="form-group">
+					<label>Profesor *</label> <select id="profesorId"
+						class="form-control" required>
+						<option value="">-- Cargando profesores... --</option>
+					</select>
+				</div>
 
-                <div style="display: flex; gap: 10px; margin-bottom: 15px;">
-                    <div class="form-group" style="flex: 1;">
-                        <label>Día *</label>
-                        <select id="diaSemana" class="form-control" required>
-                            <option value="">-- Seleccionar --</option>
-                            <option value="LUNES">Lunes</option>
-                            <option value="MARTES">Martes</option>
-                            <option value="MIERCOLES">Miércoles</option>
-                            <option value="JUEVES">Jueves</option>
-                            <option value="VIERNES">Viernes</option>
-                        </select>
-                    </div>
-                    <div class="form-group" style="flex: 1;">
-                        <label>Hora Inicio *</label>
-                        <input type="time" id="horaInicio" class="form-control" required>
-                    </div>
-                    <div class="form-group" style="flex: 1;">
-                        <label>Hora Fin *</label>
-                        <input type="time" id="horaFin" class="form-control" required>
-                    </div>
-                </div>
+				<div style="display: flex; gap: 10px; margin-bottom: 15px;">
+					<div class="form-group" style="flex: 1;">
+						<label>Día *</label> <select id="diaSemana" class="form-control"
+							required>
+							<option value="">-- Seleccionar --</option>
+							<option value="LUNES">Lunes</option>
+							<option value="MARTES">Martes</option>
+							<option value="MIERCOLES">Miércoles</option>
+							<option value="JUEVES">Jueves</option>
+							<option value="VIERNES">Viernes</option>
+						</select>
+					</div>
+					<div class="form-group" style="flex: 1;">
+						<label>Hora Inicio *</label> <input type="time" id="horaInicio"
+							class="form-control" required>
+					</div>
+					<div class="form-group" style="flex: 1;">
+						<label>Hora Fin *</label> <input type="time" id="horaFin"
+							class="form-control" required>
+					</div>
+				</div>
 
-                <div style="margin-top: 20px; text-align: right;">
-                    <button type="button" class="btn btn-secondary" onclick="cerrarModal()">Cancelar</button>
-                    <button type="submit" class="btn btn-primary">Guardar</button>
-                </div>
-            </form>
-        </div>
-    </div>
+				<div style="margin-top: 20px; text-align: right;">
+					<button type="button" class="btn btn-secondary"
+						onclick="cerrarModal()">Cancelar</button>
+					<button type="submit" class="btn btn-primary">Guardar</button>
+				</div>
+			</form>
+		</div>
+	</div>
 
-    <script src="js/config.js"></script>
-    <script src="js/auth.js"></script>
-    <script src="js/asignaciones.js"></script>
+	<script src="js/config.js"></script>
+	<script src="js/auth.js"></script>
+	<script src="js/asignaciones.js"></script>
 </body>
 </html>
