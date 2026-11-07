@@ -95,7 +95,7 @@ async function cargarAsignaciones(pagina = 0) {
     }
 }
 
-function abrirModal(asignacion = null) {
+async function abrirModal(asignacion = null) {
     const modal = document.getElementById('modal');
     const titulo = document.getElementById('modalTitulo');
     const form = document.getElementById('asignacionForm');
@@ -104,33 +104,43 @@ function abrirModal(asignacion = null) {
     // Desmarcar todo primero
     document.querySelectorAll('input[name="materiasSeleccionadas"], input[name="diasSeleccionados"]').forEach(cb => {
         cb.checked = false;
-        cb.disabled = false; // 👈 IMPORTANTE: Habilitar siempre al abrir
+        cb.disabled = false;
     });
 
     if (asignacion) {
-        titulo.textContent = 'Editar Asignación';
+        titulo.textContent = 'Editar Asignaciones del Profesor';
         document.getElementById('asignacionId').value = asignacion.id;
         document.getElementById('grupoId').value = asignacion.grupoId || '';
         document.getElementById('profesorId').value = asignacion.profesorId || '';
         document.getElementById('horaInicio').value = asignacion.horaInicio || '';
         document.getElementById('horaFin').value = asignacion.horaFin || '';
         
-        // Marcar la materia de edición
-        const cbMateria = document.querySelector(`input[name="materiasSeleccionadas"][value="${asignacion.materiaId}"]`);
-        if (cbMateria) cbMateria.checked = true;
-        
-        // Marcar el día de edición
-        const cbDia = document.querySelector(`input[name="diasSeleccionados"][value="${asignacion.diaSemana}"]`);
-        if (cbDia) cbDia.checked = true;
+        // 🔥 TRAER TODAS LAS ASIGNACIONES DE ESTE PROFESOR EN ESTE GRUPO
+        try {
+            const res = await fetchConAuth(`${API_URL}/api/asignaciones/grupo/${asignacion.grupoId}`);
+            if (res && res.ok) {
+                const asignacionesGrupo = await res.json();
+                // Filtrar solo las del profesor que estamos editando
+                const delProfesor = asignacionesGrupo.filter(a => a.profesorId === asignacion.profesorId);
+                
+                // Marcar cada materia y día que ya tenga asignado
+                delProfesor.forEach(a => {
+                    const cbMateria = document.querySelector(`input[name="materiasSeleccionadas"][value="${a.materiaId}"]`);
+                    if (cbMateria) cbMateria.checked = true;
+                    
+                    const cbDia = document.querySelector(`input[name="diasSeleccionados"][value="${a.diaSemana}"]`);
+                    if (cbDia) cbDia.checked = true;
+                });
+            }
+        } catch (error) {
+            console.error("Error cargando asignaciones previas:", error);
+        }
+
     } else {
         titulo.textContent = 'Nueva Asignación';
         document.getElementById('asignacionId').value = '';
     }
     modal.style.display = 'flex';
-}
-
-function cerrarModal() {
-    document.getElementById('modal').style.display = 'none';
 }
 
 async function guardarAsignacion(e) {
@@ -141,79 +151,47 @@ async function guardarAsignacion(e) {
     const horaInicio = document.getElementById('horaInicio').value || null;
     const horaFin = document.getElementById('horaFin').value || null;
     
-    // Obtener todas las materias y días seleccionados
     const materiasSeleccionadas = Array.from(document.querySelectorAll('input[name="materiasSeleccionadas"]:checked')).map(cb => parseInt(cb.value));
     const diasSeleccionados = Array.from(document.querySelectorAll('input[name="diasSeleccionados"]:checked')).map(cb => cb.value);
     
-    // Validaciones
     if (!grupoVal || !profesorVal || materiasSeleccionadas.length === 0 || diasSeleccionados.length === 0 || !horaInicio || !horaFin) {
         alert('❌ Debes seleccionar un grupo, un profesor, al menos una materia, al menos un día y el horario.');
         return;
     }
 
     try {
+        // Si estamos editando, primero borramos TODAS las asignaciones de este profesor en este grupo
         if (id) {
-            // MODO EDICIÓN: Primero actualizamos la asignación original
-            const primeraMateriaId = materiasSeleccionadas[0];
-            const primerDia = diasSeleccionados[0];
-            
-            const asignacionActualizar = {
-                grupoId: parseInt(grupoVal),
-                materiaId: primeraMateriaId,
-                profesorId: parseInt(profesorVal),
-                diaSemana: primerDia,
-                horaInicio, horaFin,
-                activo: true
-            };
-            
-            const responseUpdate = await fetchConAuth(`${API_URL}/api/asignaciones/${id}`, { method: 'PUT', body: JSON.stringify(asignacionActualizar) });
-            
-            if (!responseUpdate || !responseUpdate.ok) throw new Error('Error al actualizar la asignación principal');
-
-            // Luego, si se seleccionaron MÁS materias o MÁS días, los creamos como nuevos (POST)
-            let creados = 0;
-            
-            for (const materiaId of materiasSeleccionadas) {
-                for (const dia of diasSeleccionados) {
-                    // Saltamos la combinación que ya actualizamos
-                    if (materiaId === primeraMateriaId && dia === primerDia) continue;
-                    
-                    const nuevaAsignacion = {
-                        grupoId: parseInt(grupoVal),
-                        materiaId: materiaId,
-                        profesorId: parseInt(profesorVal),
-                        diaSemana: dia,
-                        horaInicio, horaFin,
-                        activo: true
-                    };
-                    const responseCreate = await fetchConAuth(`${API_URL}/api/asignaciones`, { method: 'POST', body: JSON.stringify(nuevaAsignacion) });
-                    if (responseCreate && responseCreate.ok) creados++;
+            const resExistentes = await fetchConAuth(`${API_URL}/api/asignaciones/grupo/${grupoVal}`);
+            if (resExistentes && resExistentes.ok) {
+                const existentes = await resExistentes.json();
+                const delProfesor = existentes.filter(a => a.profesorId === parseInt(profesorVal));
+                
+                // Borramos una por una
+                for (const a of delProfesor) {
+                    await fetchConAuth(`${API_URL}/api/asignaciones/${a.id}`, { method: 'DELETE' });
                 }
             }
-            
-            mostrarMensaje(`✅ Asignación actualizada y ${creados} nuevas agregadas.`);
-            
-        } else {
-            // MODO CREACIÓN: Combinatoria de Materias x Días
-            let totalPeticiones = materiasSeleccionadas.length * diasSeleccionados.length;
-            let exitos = 0;
-            
-            for (const materiaId of materiasSeleccionadas) {
-                for (const dia of diasSeleccionados) {
-                    const asignacion = {
-                        grupoId: parseInt(grupoVal),
-                        materiaId: materiaId,
-                        profesorId: parseInt(profesorVal),
-                        diaSemana: dia,
-                        horaInicio, horaFin,
-                        activo: true
-                    };
-                    const response = await fetchConAuth(`${API_URL}/api/asignaciones`, { method: 'POST', body: JSON.stringify(asignacion) });
-                    if (response && response.ok) exitos++;
-                }
-            }
-            mostrarMensaje(`✅ Se crearon ${exitos} asignaciones exitosamente.`);
         }
+
+        // Ahora creamos todas las nuevas seleccionadas
+        let exitos = 0;
+        for (const materiaId of materiasSeleccionadas) {
+            for (const dia of diasSeleccionados) {
+                const asignacion = {
+                    grupoId: parseInt(grupoVal),
+                    materiaId: materiaId,
+                    profesorId: parseInt(profesorVal),
+                    diaSemana: dia,
+                    horaInicio, horaFin,
+                    activo: true
+                };
+                const response = await fetchConAuth(`${API_URL}/api/asignaciones`, { method: 'POST', body: JSON.stringify(asignacion) });
+                if (response && response.ok) exitos++;
+            }
+        }
+        
+        mostrarMensaje(`✅ Se guardaron ${exitos} asignaciones correctamente.`);
 
         cerrarModal();
         cargarAsignaciones(paginaActual);
@@ -221,6 +199,7 @@ async function guardarAsignacion(e) {
         alert('❌ ' + error.message);
     }
 }
+
 async function editarAsignacion(id) {
     try {
         const response = await fetchConAuth(`${API_URL}/api/asignaciones/${id}`);
