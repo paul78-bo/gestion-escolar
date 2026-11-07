@@ -85,23 +85,36 @@ public class AsignacionServiceImpl implements AsignacionService {
 
     @Override
     public AsignacionResponseDTO crear(AsignacionRequestDTO dto) {
-        // 1. Validar grupo
+        // 1. Validar grupo, materia y profesor
         Grupo grupo = grupoRepository.findById(dto.getGrupoId())
                 .orElseThrow(() -> new GrupoNoEncontradoException(dto.getGrupoId()));
-
-        // 2. Validar materia
         Materia materia = materiaRepository.findById(dto.getMateriaId())
                 .orElseThrow(() -> new MateriaNoEncontradaException(dto.getMateriaId()));
-
-        // 3. Validar profesor
         Profesor profesor = profesorRepository.findById(dto.getProfesorId())
                 .orElseThrow(() -> new ProfesorNoEncontradoException(dto.getProfesorId()));
 
-        // 4. CREAMOS LA ASIGNACIÓN DIRECTAMENTE (Sin validar duplicados de profesor/materia)
+        // 2. 🔥 VALIDACIÓN CLAVE: Evitar duplicados exactos
+        // Buscamos si ya existe una asignación con el mismo grupo, materia, profesor y día
+        boolean existe = asignacionRepository.findAll().stream()
+                .anyMatch(a -> a.getActivo() &&
+                               a.getGrupo().getId().equals(dto.getGrupoId()) &&
+                               a.getMateria().getId().equals(dto.getMateriaId()) &&
+                               a.getProfesor().getId().equals(dto.getProfesorId()) &&
+                               a.getDiaSemana() != null && a.getDiaSemana().equals(dto.getDiaSemana()));
+
+        if (existe) {
+            System.out.println("⚠️ Asignación duplicada ignorada: " + materia.getNombre() + " - " + dto.getDiaSemana());
+            // Si ya existe, simplemente devolvemos una respuesta (o podrías lanzar una excepción)
+            // Para evitar que el frontend falle, devolvemos un DTO vacío o el existente.
+            // Lo ideal es lanzar una excepción, pero para no romper el bucle del frontend, la ignoramos.
+            return asignacionMapper.toResponseDTO(new Asignacion()); 
+        }
+
+        // 3. Crear asignación
         Asignacion a = asignacionMapper.toEntity(dto, grupo, materia, profesor);
         Asignacion guardada = asignacionRepository.save(a);
 
-        // 5. Auto-crear calificaciones para todos los alumnos ya inscritos en el grupo
+        // 4. Auto-crear calificaciones (solo si se creó la asignación)
         List<Inscripcion> inscripciones = inscripcionRepository.findActivasByGrupoId(grupo.getId());
         for (Inscripcion i : inscripciones) {
             for (int periodo = 1; periodo <= 3; periodo++) {
@@ -119,8 +132,6 @@ public class AsignacionServiceImpl implements AsignacionService {
         }
         return asignacionMapper.toResponseDTO(guardada);
     }
-    
-    
     
     @Override
     public AsignacionResponseDTO actualizar(Long id, AsignacionRequestDTO dto) {
