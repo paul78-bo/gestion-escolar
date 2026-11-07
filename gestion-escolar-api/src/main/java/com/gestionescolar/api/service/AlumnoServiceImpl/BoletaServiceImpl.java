@@ -52,28 +52,28 @@ public class BoletaServiceImpl implements BoletaService {
         Grupo grupo = inscripciones.get(0).getGrupo();
         List<Calificacion> todasCalificaciones = calificacionRepository.findCalificacionesConDetalles(alumnoId);
 
+        // Agrupamos por el NOMBRE de la materia, pero pasamos todo a minúsculas para evitar errores de acentos/mayúsculas
         Map<String, List<Calificacion>> califsPorMateria = todasCalificaciones.stream()
                 .filter(c -> c.getAsignacion().getGrupo().getId().equals(grupo.getId()))
-                .collect(Collectors.groupingBy(c -> c.getAsignacion().getMateria().getNombre()));
+                .collect(Collectors.groupingBy(c -> c.getAsignacion().getMateria().getNombre().toLowerCase()));
 
+        // El orden oficial (en minúsculas para comparar)
         String[] ordenOficial = {
-                "Español", "Inglés", "Artes", "Matemáticas", "Biología", 
-                "Geografía", "Historia", "Formación Cívica y Ética", "Tecnología", "Educación Física"
+                "español", "inglés", "artes", "matemáticas", "biología", 
+                "geografía", "historia", "formación cívica y ética", "tecnología", "educación física"
             };
 
         Map<String, CampoFormativoDTO> mapaCampos = new LinkedHashMap<>();
         BigDecimal sumaPromediosMaterias = BigDecimal.ZERO;
         boolean todasMateriasCalificadas = true; 
 
-        // 👈 Variables para acumular las sumas de los trimestres
         double sumaT1 = 0.0, sumaT2 = 0.0, sumaT3 = 0.0;
         
-        for (String nombreMateria : ordenOficial) {
-            List<Calificacion> califs = califsPorMateria.getOrDefault(nombreMateria, new ArrayList<>());
+        for (String nombreMateriaLower : ordenOficial) {
+            List<Calificacion> califs = califsPorMateria.getOrDefault(nombreMateriaLower, new ArrayList<>());
 
             BigDecimal t1 = null, t2 = null, t3 = null;
-            String codigo = "-";
-            String campoNombre = "OTROS";
+            String nombreReal = "-"; 
 
             for (Calificacion c : califs) {
                 if (c.getPeriodo() != null && c.getCalificacion() != null) {
@@ -81,22 +81,25 @@ public class BoletaServiceImpl implements BoletaService {
                     if (c.getPeriodo() == 2) t2 = c.getCalificacion();
                     if (c.getPeriodo() == 3) t3 = c.getCalificacion();
                 }
+                // Tomamos el nombre real de la base de datos
+                if (nombreReal.equals("-")) {
+                    nombreReal = c.getAsignacion().getMateria().getNombre();
+                }
             }
 
-            // 👈 AQUÍ SUMAMOS (Después de obtener los valores reales de t1, t2, t3)
             sumaT1 += (t1 != null) ? t1.doubleValue() : 0.0;
             sumaT2 += (t2 != null) ? t2.doubleValue() : 0.0;
             sumaT3 += (t3 != null) ? t3.doubleValue() : 0.0;
 
-            // Si una materia no tiene calificación, la bandera se vuelve false
             if (t1 == null && t2 == null && t3 == null) {
                 todasMateriasCalificadas = false;
             }
 
-            if (nombreMateria.equals("Español") || nombreMateria.equals("Inglés") || nombreMateria.equals("Artes")) campoNombre = "LENGUAJES";
-            if (nombreMateria.equals("Matemáticas") || nombreMateria.equals("Biología")) campoNombre = "SABERES_Y_PENSAMIENTO_CIENTIFICO";
-            if (nombreMateria.equals("Geografía") || nombreMateria.equals("Historia") || nombreMateria.equals("Formación Cívica y Ética")) campoNombre = "ETICA_NATURALEZA_Y_SOCIEDADES";
-            if (nombreMateria.equals("Tecnología") || nombreMateria.equals("Educación Física")) campoNombre = "DE_LO_HUMANO_Y_LO_COMUNITARIO";
+            String campoNombre = "OTROS";
+            if (nombreMateriaLower.equals("español") || nombreMateriaLower.equals("inglés") || nombreMateriaLower.equals("artes")) campoNombre = "LENGUAJES";
+            if (nombreMateriaLower.equals("matemáticas") || nombreMateriaLower.equals("biología")) campoNombre = "SABERES_Y_PENSAMIENTO_CIENTIFICO";
+            if (nombreMateriaLower.equals("geografía") || nombreMateriaLower.equals("historia") || nombreMateriaLower.equals("formación cívica y ética")) campoNombre = "ETICA_NATURALEZA_Y_SOCIEDADES";
+            if (nombreMateriaLower.equals("tecnología") || nombreMateriaLower.equals("educación física")) campoNombre = "DE_LO_HUMANO_Y_LO_COMUNITARIO";
 
             BigDecimal promedioMateria = null;
             if (t1 != null || t2 != null || t3 != null) {
@@ -107,8 +110,8 @@ public class BoletaServiceImpl implements BoletaService {
             }
 
             MateriaCalificacionDTO dto = new MateriaCalificacionDTO();
-            dto.setNombreMateria(nombreMateria);
-            dto.setCodigoMateria(codigo);
+            dto.setNombreMateria(nombreMateriaLower.substring(0, 1).toUpperCase() + nombreMateriaLower.substring(1)); 
+            dto.setCodigoMateria("-");
             dto.setTrimestre1(t1);
             dto.setTrimestre2(t2);
             dto.setTrimestre3(t3);
@@ -123,18 +126,15 @@ public class BoletaServiceImpl implements BoletaService {
             campoDTO.getMaterias().add(dto);
         }
 
-        // CÁLCULO FINAL DEL PROMEDIO GENERAL (Solo si todas están calificadas)
         BigDecimal promedioFinal = null; 
         if (todasMateriasCalificadas) {
             promedioFinal = sumaPromediosMaterias.divide(new BigDecimal(ordenOficial.length), 1, RoundingMode.HALF_UP);
         }
 
-        // 👈 CÁLCULO DE PROMEDIOS POR TRIMESTRE (Solo si el trimestre tiene notas)
         BigDecimal promedioT1 = (sumaT1 > 0) ? BigDecimal.valueOf(sumaT1 / ordenOficial.length).setScale(1, RoundingMode.HALF_UP) : null;
         BigDecimal promedioT2 = (sumaT2 > 0) ? BigDecimal.valueOf(sumaT2 / ordenOficial.length).setScale(1, RoundingMode.HALF_UP) : null;
         BigDecimal promedioT3 = (sumaT3 > 0) ? BigDecimal.valueOf(sumaT3 / ordenOficial.length).setScale(1, RoundingMode.HALF_UP) : null;
 
-        // ARMAMOS EL DTO (Solo una vez)
         BoletaResponseDTO boleta = new BoletaResponseDTO();
         boleta.setAlumnoId(alumno.getId());
         boleta.setMatricula(alumno.getMatricula());
@@ -142,7 +142,6 @@ public class BoletaServiceImpl implements BoletaService {
         boleta.setGrupoNombre(grupo.getNombre());
         boleta.setCicloNombre(grupo.getCiclo().getNombre());
         
-        // Seteamos los promedios
         boleta.setPromedioT1(promedioT1);
         boleta.setPromedioT2(promedioT2);
         boleta.setPromedioT3(promedioT3);
