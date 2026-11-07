@@ -24,13 +24,16 @@ async function cargarAlumnos(pagina = 0) {
 
         // 2. Cargamos TODAS las inscripciones para saber quiénes están en un grupo
         let alumnosInscritosIds = [];
-        const resInscripciones = await fetchConAuth(`${API_URL}/api/inscripciones`);
-        if (resInscripciones && resInscripciones.ok) {
-            const inscripciones = await resInscripciones.json();
-            // Guardamos solo los IDs de los alumnos que tienen inscripción activa
-            alumnosInscritosIds = inscripciones
-                .filter(i => i.estatus === 'ACTIVA' && i.activo)
-                .map(i => i.alumnoId);
+        try {
+            const resInscripciones = await fetchConAuth(`${API_URL}/api/inscripciones`);
+            if (resInscripciones && resInscripciones.ok) {
+                const inscripciones = await resInscripciones.json();
+                alumnosInscritosIds = inscripciones
+                    .filter(i => i.estatus === 'ACTIVA' && i.activo)
+                    .map(i => i.alumnoId);
+            }
+        } catch (e) {
+            console.warn("No se pudieron cargar las inscripciones, pero los alumnos sí:", e);
         }
 
         paginaActual = data.page?.number ?? 0;
@@ -40,7 +43,6 @@ async function cargarAlumnos(pagina = 0) {
             tbody.innerHTML = '<tr><td colspan="7" style="text-align: center;">No hay alumnos registrados</td></tr>';
         } else {
             tbody.innerHTML = alumnos.map(a => {
-                // Validamos si el alumno está inscrito
                 const estaInscrito = alumnosInscritosIds.includes(a.id);
                 const etiquetaInscrito = estaInscrito 
                     ? '<span style="background-color: #28a745; color: white; padding: 3px 8px; border-radius: 12px; font-size: 11px; margin-left: 5px;">✅ Inscrito</span>' 
@@ -64,7 +66,7 @@ async function cargarAlumnos(pagina = 0) {
             }).join('');
         }
 
-        // Actualizar paginación (igual que antes)
+        // Actualizar paginación
         if (document.getElementById('paginaActual')) document.getElementById('paginaActual').textContent = paginaActual + 1;
         if (document.getElementById('totalPaginas')) document.getElementById('totalPaginas').textContent = totalPaginas;
         if (document.getElementById('btnAnterior')) document.getElementById('btnAnterior').disabled = paginaActual === 0;
@@ -79,20 +81,17 @@ async function cargarAlumnos(pagina = 0) {
         tbody.innerHTML = `<tr><td colspan="7" style="text-align: center; color: red;">Error: ${error.message}</td></tr>`;
     }
 }
+
 // ==========================================
-// 2. FUNCIÓN PARA EDITAR (La que falta)
+// 2. FUNCIÓN PARA EDITAR
 // ==========================================
 async function editarAlumno(id) {
-    console.log("Clic en editar alumno ID:", id); // Esto debe salir en consola
     try {
         const response = await fetchConAuth(`${API_URL}/api/alumnos/${id}`);
-        
         if (!response) return;
         if (!response.ok) throw new Error('Error al obtener datos');
-
         const alumno = await response.json();
         abrirModal(alumno);
-
     } catch (error) {
         console.error('Error al editar:', error);
         alert('❌ ' + error.message);
@@ -110,11 +109,9 @@ function abrirModal(alumno = null) {
     form.reset();
 
     if (alumno) {
-        // Modo Edición
         document.getElementById('modalTitulo').textContent = 'Editar Alumno';
         document.getElementById('alumnoId').value = alumno.id || '';
         
-        // --- DATOS PERSONALES ---
         document.getElementById('nombre').value = alumno.nombre || '';
         document.getElementById('apellidoP').value = alumno.apellidoP || '';
         document.getElementById('apellidoM').value = alumno.apellidoM || '';
@@ -127,10 +124,8 @@ function abrirModal(alumno = null) {
         document.getElementById('nacionalidad').value = alumno.nacionalidad || '';
         document.getElementById('paisNacimiento').value = alumno.paisNacimiento || '';
         document.getElementById('entidadNacimiento').value = alumno.entidadNacimiento || '';
-		document.getElementById('lugarNacimiento').value = alumno.lugarNacimiento || '';
-
+        document.getElementById('lugarNacimiento').value = alumno.lugarNacimiento || '';
         
-        // --- DOMICILIO ---
         document.getElementById('calle').value = alumno.calle || '';
         document.getElementById('numeroExterior').value = alumno.numeroExterior || '';
         document.getElementById('numeroInterior').value = alumno.numeroInterior || '';
@@ -139,21 +134,16 @@ function abrirModal(alumno = null) {
         document.getElementById('municipio').value = alumno.municipio || '';
         document.getElementById('direccion').value = alumno.direccion || '';
 
-        // --- DATOS ACADÉMICOS ---
         document.getElementById('matricula').value = alumno.matricula || '';
         document.getElementById('fechaIngreso').value = alumno.fechaIngreso || '';
         document.getElementById('estatus').value = alumno.estatus || 'ACTIVO';
 
-        // --- TUTOR ---
         document.getElementById('tutorNombre').value = alumno.tutorNombre || '';
         document.getElementById('tutorTelefono').value = alumno.tutorTelefono || '';
         document.getElementById('tutorEmail').value = alumno.tutorEmail || '';
-        
-        // --- OBSERVACIONES ---
         document.getElementById('observaciones').value = alumno.observaciones || '';
 
     } else {
-        // Modo Nuevo
         document.getElementById('modalTitulo').textContent = 'Nuevo Alumno';
         document.getElementById('alumnoId').value = '';
         document.getElementById('estatus').value = 'ACTIVO';
@@ -162,13 +152,9 @@ function abrirModal(alumno = null) {
     modal.style.display = 'flex';
 }
 
-
-
 function cerrarModal() {
     document.getElementById('modal').style.display = 'none';
 }
-
-
 
 function calcularEdad(fechaNacimiento) {
     const hoy = new Date();
@@ -181,15 +167,6 @@ function calcularEdad(fechaNacimiento) {
     return edad;
 }
 
-// Dentro de tu función guardarAlumno(e):
-const fechaNac = document.getElementById('fechaNacimiento').value;
-const edad = calcularEdad(fechaNac);
-
-if (edad < 11 || edad > 16) {
-    alert('❌ El alumno debe tener entre 11 y 16 años para ingresar a la Telesecundaria. Edad actual: ' + edad + ' años.');
-    return;
-}
-
 // ==========================================
 // 4. GUARDAR (Crear o Actualizar)
 // ==========================================
@@ -197,7 +174,14 @@ async function guardarAlumno(e) {
     e.preventDefault();
     
     const id = document.getElementById('alumnoId').value;
-	
+    const fechaNac = document.getElementById('fechaNacimiento').value;
+    
+    // 👇 VALIDACIÓN DE EDAD AQUÍ
+    const edad = calcularEdad(fechaNac);
+    if (edad < 11 || edad > 16) {
+        alert('❌ El alumno debe tener entre 11 y 16 años para ingresar a la Telesecundaria. Edad actual: ' + edad + ' años.');
+        return;
+    }
     
     const alumno = {
         nombre: document.getElementById('nombre').value.trim(),
@@ -212,7 +196,7 @@ async function guardarAlumno(e) {
         nacionalidad: document.getElementById('nacionalidad').value.trim(),
         paisNacimiento: document.getElementById('paisNacimiento').value.trim(),
         entidadNacimiento: document.getElementById('entidadNacimiento').value.trim(),
-		lugarNacimiento: document.getElementById('lugarNacimiento').value.trim(),
+        lugarNacimiento: document.getElementById('lugarNacimiento').value.trim(),
         
         calle: document.getElementById('calle').value.trim(),
         numeroExterior: document.getElementById('numeroExterior').value.trim(),
@@ -300,35 +284,23 @@ async function buscar() {
     }
 }
 
-
-
 async function eliminarAlumno(id) {
-    // 1. Pedir confirmación al usuario (buena práctica)
     const confirmar = confirm(`¿Estás seguro de que deseas eliminar al alumno con ID ${id}?`);
-    if (!confirmar) return; // Si dice que no, cancelamos
+    if (!confirmar) return;
 
     try {
-        // 2. Hacer la petición DELETE al backend
-        const response = await fetchConAuth(`${API_URL}/api/alumnos/${id}`, {
-            method: 'DELETE'
-        });
-
-        if (!response) return; // Si falla el token
-
-        // 3. Validar la respuesta
-        if (!response.ok) {
-            throw new Error(`Error ${response.status} al intentar eliminar`);
-        }
-
-        // 4. Si todo sale bien, avisar y recargar la tabla
+        const response = await fetchConAuth(`${API_URL}/api/alumnos/${id}`, { method: 'DELETE' });
+        if (!response) return;
+        if (!response.ok) throw new Error(`Error ${response.status} al intentar eliminar`);
+        
         alert('✅ Alumno eliminado correctamente');
-        cargarAlumnos(paginaActual); // Recarga la tabla en la página actual
-
+        cargarAlumnos(paginaActual);
     } catch (error) {
         console.error('Error al eliminar:', error);
         alert('❌ ' + error.message);
     }
 }
+
 function limpiarBusqueda() {
     document.getElementById('busqueda').value = '';
     cargarAlumnos(0);
