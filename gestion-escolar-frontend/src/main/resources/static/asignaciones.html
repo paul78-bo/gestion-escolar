@@ -113,15 +113,25 @@
 
 				<div style="display: flex; gap: 10px; margin-bottom: 15px;">
 					<div class="form-group" style="flex: 1;">
-						<label>Día *</label> <select id="diaSemana" class="form-control"
-							required>
-							<option value="">-- Seleccionar --</option>
-							<option value="LUNES">Lunes</option>
-							<option value="MARTES">Martes</option>
-							<option value="MIERCOLES">Miércoles</option>
-							<option value="JUEVES">Jueves</option>
-							<option value="VIERNES">Viernes</option>
-						</select>
+						<label>Días de la semana *</label>
+						<div id="diasCheckboxes"
+							style="display: flex; flex-wrap: wrap; gap: 10px; border: 1px solid #ccc; padding: 10px; border-radius: 4px;">
+							<label style="cursor: pointer; font-weight: normal;"><input
+								type="checkbox" name="diasSeleccionados" value="LUNES"
+								style="margin-right: 5px;"> Lunes</label> <label
+								style="cursor: pointer; font-weight: normal;"><input
+								type="checkbox" name="diasSeleccionados" value="MARTES"
+								style="margin-right: 5px;"> Martes</label> <label
+								style="cursor: pointer; font-weight: normal;"><input
+								type="checkbox" name="diasSeleccionados" value="MIERCOLES"
+								style="margin-right: 5px;"> Miércoles</label> <label
+								style="cursor: pointer; font-weight: normal;"><input
+								type="checkbox" name="diasSeleccionados" value="JUEVES"
+								style="margin-right: 5px;"> Jueves</label> <label
+								style="cursor: pointer; font-weight: normal;"><input
+								type="checkbox" name="diasSeleccionados" value="VIERNES"
+								style="margin-right: 5px;"> Viernes</label>
+						</div>
 					</div>
 					<div class="form-group" style="flex: 1;">
 						<label>Hora Inicio *</label> <input type="time" id="horaInicio"
