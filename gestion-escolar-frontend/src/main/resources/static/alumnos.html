@@ -185,50 +185,53 @@
 				</div>
 
 				<!-- SECCIÓN 2: DOMICILIO -->
+				<!-- SECCIÓN 2: DOMICILIO -->
 				<h3
 					style="margin-top: 20px; color: #2c3e50; border-bottom: 2px solid #3498db; padding-bottom: 5px;">🏠
 					Domicilio</h3>
 				<div class="row">
 					<div class="col-md-6">
 						<div class="form-group">
-							<label>Calle</label><input type="text" id="calle"
+							<label>Calle *</label> <input type="text" id="calle"
+								class="form-control" required>
+						</div>
+					</div>
+					<div class="col-md-2">
+						<div class="form-group">
+							<label>No. Ext</label> <input type="text" id="numeroExterior"
 								class="form-control">
 						</div>
 					</div>
 					<div class="col-md-2">
 						<div class="form-group">
-							<label>No. Ext</label><input type="text" id="numeroExterior"
+							<label>No. Int</label> <input type="text" id="numeroInterior"
 								class="form-control">
 						</div>
 					</div>
 					<div class="col-md-2">
 						<div class="form-group">
-							<label>No. Int</label><input type="text" id="numeroInterior"
+							<label>C.P.</label> <input type="text" id="codigoPostal"
 								class="form-control">
 						</div>
 					</div>
-					<div class="col-md-2">
+
+					<div class="col-md-4">
 						<div class="form-group">
-							<label>C.P.</label><input type="text" id="codigoPostal"
+							<label>Colonia</label> <input type="text" id="colonia"
 								class="form-control">
 						</div>
 					</div>
 					<div class="col-md-4">
 						<div class="form-group">
-							<label>Colonia</label><input type="text" id="colonia"
-								class="form-control">
+							<label>Localidad / Municipio</label> <input type="text"
+								id="municipio" class="form-control">
 						</div>
 					</div>
 					<div class="col-md-4">
 						<div class="form-group">
-							<label>Municipio</label><input type="text" id="municipio"
-								class="form-control">
-						</div>
-					</div>
-					<div class="col-md-4">
-						<div class="form-group">
-							<label>Dirección Completa</label><input type="text"
-								id="direccion" class="form-control">
+							<label>Dirección Completa (Referencia)</label> <input type="text"
+								id="direccion" class="form-control"
+								placeholder="Ej. Entre calles...">
 						</div>
 					</div>
 				</div>
