@@ -175,8 +175,9 @@ async function cargarVistaPreviaBoleta(alumnoId) {
         // Pintar las materias
         data.camposFormativos.forEach(campo => {
             campo.materias.forEach(m => {
-                // 👇 CONVERTIMOS A MINÚSCULAS AQUÍ
-                let nombre = m.nombreMateria.toLowerCase();
+                // 👇 SOLUCIÓN: Leemos el nombre de cualquier propiedad que exista
+                let nombreMateria = m.nombreMateria || m.nombre || m.materia || "";
+                let nombre = nombreMateria.toLowerCase();
 
                 const pintarPV = (id, t1, t2, t3) => {
                     document.getElementById(`pv-t1-${id}`).textContent = (t1 != null) ? Number(t1).toFixed(1) : '-';
@@ -184,11 +185,11 @@ async function cargarVistaPreviaBoleta(alumnoId) {
                     document.getElementById(`pv-t3-${id}`).textContent = (t3 != null) ? Number(t3).toFixed(1) : '-';
                 };
 
-                // Ahora las comparaciones funcionarán porque "Inglés" se convierte en "inglés"
-                if (nombre.includes('español')) pintarPV('espanol', m.trimestre1, m.trimestre2, m.trimestre3);
-                if (nombre.includes('inglés')) pintarPV('ingles', m.trimestre1, m.trimestre2, m.trimestre3);
+                // Ahora las comparaciones funcionarán
+                if (nombre.includes('español') || nombre.includes('espanol')) pintarPV('espanol', m.trimestre1, m.trimestre2, m.trimestre3);
+                if (nombre.includes('inglés') || nombre.includes('ingles')) pintarPV('ingles', m.trimestre1, m.trimestre2, m.trimestre3);
                 if (nombre.includes('artes')) pintarPV('artes', m.trimestre1, m.trimestre2, m.trimestre3);
-                if (nombre.includes('matemátic')) pintarPV('matematicas', m.trimestre1, m.trimestre2, m.trimestre3);
+                if (nombre.includes('matemátic') || nombre.includes('matematic')) pintarPV('matematicas', m.trimestre1, m.trimestre2, m.trimestre3);
                 if (nombre.includes('biolog')) pintarPV('biologia', m.trimestre1, m.trimestre2, m.trimestre3);
                 if (nombre.includes('geograf')) pintarPV('geografia', m.trimestre1, m.trimestre2, m.trimestre3);
                 if (nombre.includes('historia')) pintarPV('historia', m.trimestre1, m.trimestre2, m.trimestre3);
