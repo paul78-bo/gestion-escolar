@@ -175,6 +175,7 @@ async function cargarVistaPreviaBoleta(alumnoId) {
         // Pintar las materias
         data.camposFormativos.forEach(campo => {
             campo.materias.forEach(m => {
+                // 👇 CONVERTIMOS A MINÚSCULAS AQUÍ
                 let nombre = m.nombreMateria.toLowerCase();
 
                 const pintarPV = (id, t1, t2, t3) => {
@@ -183,6 +184,7 @@ async function cargarVistaPreviaBoleta(alumnoId) {
                     document.getElementById(`pv-t3-${id}`).textContent = (t3 != null) ? Number(t3).toFixed(1) : '-';
                 };
 
+                // Ahora las comparaciones funcionarán porque "Inglés" se convierte en "inglés"
                 if (nombre.includes('español')) pintarPV('espanol', m.trimestre1, m.trimestre2, m.trimestre3);
                 if (nombre.includes('inglés')) pintarPV('ingles', m.trimestre1, m.trimestre2, m.trimestre3);
                 if (nombre.includes('artes')) pintarPV('artes', m.trimestre1, m.trimestre2, m.trimestre3);
@@ -196,8 +198,7 @@ async function cargarVistaPreviaBoleta(alumnoId) {
             });
         });
 
-        // 👇 AQUÍ ES DONDE VA EL CÓDIGO QUE ME PREGUNTASTE 👇
-        // Pintamos los promedios de los trimestres y el promedio general
+        // Pintamos los promedios
         document.getElementById('pv-prom-t1').textContent = (data.promedioT1 != null) ? Number(data.promedioT1).toFixed(1) : 'En curso';
         document.getElementById('pv-prom-t2').textContent = (data.promedioT2 != null) ? Number(data.promedioT2).toFixed(1) : 'En curso';
         document.getElementById('pv-prom-t3').textContent = (data.promedioT3 != null) ? Number(data.promedioT3).toFixed(1) : 'En curso';
