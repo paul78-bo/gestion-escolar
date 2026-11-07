@@ -28,7 +28,6 @@ async function cargarMaterias() {
     if (!r || !r.ok) return;
     const materias = await r.json();
     
-    // Llenamos el contenedor con checkboxes
     document.getElementById('materiasCheckboxes').innerHTML = materias.map(m => `
         <div style="margin-bottom: 5px;">
             <label style="display: flex; align-items: center; cursor: pointer; font-weight: normal;">
@@ -38,7 +37,6 @@ async function cargarMaterias() {
         </div>
     `).join('');
 }
-
 
 async function cargarProfesores() {
     const r = await fetchConAuth(`${API_URL}/api/profesores/activos`);
@@ -120,10 +118,8 @@ async function abrirModal(asignacion = null) {
             const res = await fetchConAuth(`${API_URL}/api/asignaciones/grupo/${asignacion.grupoId}`);
             if (res && res.ok) {
                 const asignacionesGrupo = await res.json();
-                // Filtrar solo las del profesor que estamos editando
                 const delProfesor = asignacionesGrupo.filter(a => a.profesorId === asignacion.profesorId);
                 
-                // Marcar cada materia y día que ya tenga asignado
                 delProfesor.forEach(a => {
                     const cbMateria = document.querySelector(`input[name="materiasSeleccionadas"][value="${a.materiaId}"]`);
                     if (cbMateria) cbMateria.checked = true;
@@ -143,8 +139,21 @@ async function abrirModal(asignacion = null) {
     modal.style.display = 'flex';
 }
 
+// 👇 FUNCIÓN RESTAURADA
+function cerrarModal() {
+    document.getElementById('modal').style.display = 'none';
+}
+
 async function guardarAsignacion(e) {
     e.preventDefault();
+    
+    // 👇 PROTECCIÓN ANTI DOBLE CLIC
+    const btnSubmit = document.querySelector('#asignacionForm button[type="submit"]');
+    if (btnSubmit) {
+        btnSubmit.disabled = true;
+        btnSubmit.textContent = '⏳ Guardando...';
+    }
+
     const id = document.getElementById('asignacionId').value;
     const grupoVal = document.getElementById('grupoId').value;
     const profesorVal = document.getElementById('profesorId').value;
@@ -156,25 +165,27 @@ async function guardarAsignacion(e) {
     
     if (!grupoVal || !profesorVal || materiasSeleccionadas.length === 0 || diasSeleccionados.length === 0 || !horaInicio || !horaFin) {
         alert('❌ Debes seleccionar un grupo, un profesor, al menos una materia, al menos un día y el horario.');
+        if (btnSubmit) {
+            btnSubmit.disabled = false;
+            btnSubmit.textContent = 'Guardar';
+        }
         return;
     }
 
     try {
-        // Si estamos editando, primero borramos TODAS las asignaciones de este profesor en este grupo
         if (id) {
+            // MODO EDICIÓN: borrar las viejas y crear las nuevas
             const resExistentes = await fetchConAuth(`${API_URL}/api/asignaciones/grupo/${grupoVal}`);
             if (resExistentes && resExistentes.ok) {
                 const existentes = await resExistentes.json();
                 const delProfesor = existentes.filter(a => a.profesorId === parseInt(profesorVal));
                 
-                // Borramos una por una
                 for (const a of delProfesor) {
                     await fetchConAuth(`${API_URL}/api/asignaciones/${a.id}`, { method: 'DELETE' });
                 }
             }
         }
 
-        // Ahora creamos todas las nuevas seleccionadas
         let exitos = 0;
         for (const materiaId of materiasSeleccionadas) {
             for (const dia of diasSeleccionados) {
@@ -192,11 +203,15 @@ async function guardarAsignacion(e) {
         }
         
         mostrarMensaje(`✅ Se guardaron ${exitos} asignaciones correctamente.`);
-
         cerrarModal();
         cargarAsignaciones(paginaActual);
     } catch (error) {
         alert('❌ ' + error.message);
+    } finally {
+        if (btnSubmit) {
+            btnSubmit.disabled = false;
+            btnSubmit.textContent = 'Guardar';
+        }
     }
 }
 
