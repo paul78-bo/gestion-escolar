@@ -52,15 +52,15 @@ public class BoletaServiceImpl implements BoletaService {
         Grupo grupo = inscripciones.get(0).getGrupo();
         List<Calificacion> todasCalificaciones = calificacionRepository.findCalificacionesConDetalles(alumnoId);
 
-        // Agrupamos por el NOMBRE de la materia, pero pasamos todo a minúsculas para evitar errores de acentos/mayúsculas
-        Map<String, List<Calificacion>> califsPorMateria = todasCalificaciones.stream()
+        // Agrupamos por el ID de la asignación para evitar problemas de nombres
+        Map<Long, List<Calificacion>> califsPorAsignacion = todasCalificaciones.stream()
                 .filter(c -> c.getAsignacion().getGrupo().getId().equals(grupo.getId()))
-                .collect(Collectors.groupingBy(c -> c.getAsignacion().getMateria().getNombre().toLowerCase()));
+                .collect(Collectors.groupingBy(c -> c.getAsignacion().getId()));
 
-        // El orden oficial (en minúsculas para comparar)
+        // Orden oficial de las materias (por nombre para mostrarlas bonito en el frontend)
         String[] ordenOficial = {
-                "español", "inglés", "artes", "matemáticas", "biología", 
-                "geografía", "historia", "formación cívica y ética", "tecnología", "educación física"
+                "Español", "Inglés", "Artes", "Matemáticas", "Biología", 
+                "Geografía", "Historia", "Formación Cívica y Ética", "Tecnología", "Educación Física"
             };
 
         Map<String, CampoFormativoDTO> mapaCampos = new LinkedHashMap<>();
@@ -69,21 +69,28 @@ public class BoletaServiceImpl implements BoletaService {
 
         double sumaT1 = 0.0, sumaT2 = 0.0, sumaT3 = 0.0;
         
-        for (String nombreMateriaLower : ordenOficial) {
-            List<Calificacion> califs = califsPorMateria.getOrDefault(nombreMateriaLower, new ArrayList<>());
+        // Iteramos sobre las calificaciones agrupadas
+        for (Map.Entry<Long, List<Calificacion>> entry : califsPorAsignacion.entrySet()) {
+            List<Calificacion> califs = entry.getValue();
+            if (califs.isEmpty()) continue;
+
+            // Tomamos el nombre real de la materia desde la base de datos
+            String nombreMateriaReal = califs.get(0).getAsignacion().getMateria().getNombre();
+            String campoNombre = "OTROS";
+            
+            // Asignamos el campo formativo basándonos en el nombre real
+            if (nombreMateriaReal.toLowerCase().contains("espa") || nombreMateriaReal.toLowerCase().contains("ingl") || nombreMateriaReal.toLowerCase().contains("arte")) campoNombre = "LENGUAJES";
+            if (nombreMateriaReal.toLowerCase().contains("mate") || nombreMateriaReal.toLowerCase().contains("biol")) campoNombre = "SABERES_Y_PENSAMIENTO_CIENTIFICO";
+            if (nombreMateriaReal.toLowerCase().contains("geog") || nombreMateriaReal.toLowerCase().contains("hist") || nombreMateriaReal.toLowerCase().contains("form") || nombreMateriaReal.toLowerCase().contains("etica")) campoNombre = "ETICA_NATURALEZA_Y_SOCIEDADES";
+            if (nombreMateriaReal.toLowerCase().contains("tecn") || nombreMateriaReal.toLowerCase().contains("fis") || nombreMateriaReal.toLowerCase().contains("educ")) campoNombre = "DE_LO_HUMANO_Y_LO_COMUNITARIO";
 
             BigDecimal t1 = null, t2 = null, t3 = null;
-            String nombreReal = "-"; 
 
             for (Calificacion c : califs) {
                 if (c.getPeriodo() != null && c.getCalificacion() != null) {
                     if (c.getPeriodo() == 1) t1 = c.getCalificacion();
                     if (c.getPeriodo() == 2) t2 = c.getCalificacion();
                     if (c.getPeriodo() == 3) t3 = c.getCalificacion();
-                }
-                // Tomamos el nombre real de la base de datos
-                if (nombreReal.equals("-")) {
-                    nombreReal = c.getAsignacion().getMateria().getNombre();
                 }
             }
 
@@ -95,12 +102,6 @@ public class BoletaServiceImpl implements BoletaService {
                 todasMateriasCalificadas = false;
             }
 
-            String campoNombre = "OTROS";
-            if (nombreMateriaLower.equals("español") || nombreMateriaLower.equals("inglés") || nombreMateriaLower.equals("artes")) campoNombre = "LENGUAJES";
-            if (nombreMateriaLower.equals("matemáticas") || nombreMateriaLower.equals("biología")) campoNombre = "SABERES_Y_PENSAMIENTO_CIENTIFICO";
-            if (nombreMateriaLower.equals("geografía") || nombreMateriaLower.equals("historia") || nombreMateriaLower.equals("formación cívica y ética")) campoNombre = "ETICA_NATURALEZA_Y_SOCIEDADES";
-            if (nombreMateriaLower.equals("tecnología") || nombreMateriaLower.equals("educación física")) campoNombre = "DE_LO_HUMANO_Y_LO_COMUNITARIO";
-
             BigDecimal promedioMateria = null;
             if (t1 != null || t2 != null || t3 != null) {
                 double suma = (t1 != null ? t1.doubleValue() : 0) + (t2 != null ? t2.doubleValue() : 0) + (t3 != null ? t3.doubleValue() : 0);
@@ -110,7 +111,7 @@ public class BoletaServiceImpl implements BoletaService {
             }
 
             MateriaCalificacionDTO dto = new MateriaCalificacionDTO();
-            dto.setNombreMateria(nombreMateriaLower.substring(0, 1).toUpperCase() + nombreMateriaLower.substring(1)); 
+            dto.setNombreMateria(nombreMateriaReal); // Enviamos el nombre real (con o sin acento)
             dto.setCodigoMateria("-");
             dto.setTrimestre1(t1);
             dto.setTrimestre2(t2);
@@ -127,8 +128,8 @@ public class BoletaServiceImpl implements BoletaService {
         }
 
         BigDecimal promedioFinal = null; 
-        if (todasMateriasCalificadas) {
-            promedioFinal = sumaPromediosMaterias.divide(new BigDecimal(ordenOficial.length), 1, RoundingMode.HALF_UP);
+        if (todasMateriasCalificadas && !califsPorAsignacion.isEmpty()) {
+            promedioFinal = sumaPromediosMaterias.divide(new BigDecimal(califsPorAsignacion.size()), 1, RoundingMode.HALF_UP);
         }
 
         BigDecimal promedioT1 = (sumaT1 > 0) ? BigDecimal.valueOf(sumaT1 / ordenOficial.length).setScale(1, RoundingMode.HALF_UP) : null;
@@ -148,7 +149,7 @@ public class BoletaServiceImpl implements BoletaService {
         boleta.setPromedioFinal(promedioFinal); 
         
         List<CampoFormativoDTO> listaFinal = new ArrayList<>();
-        String[] ordenCampos = {"LENGUAJES", "SABERES_Y_PENSAMIENTO_CIENTIFICO", "ETICA_NATURALEZA_Y_SOCIEDADES", "DE_LO_HUMANO_Y_LO_COMUNITARIO"};
+        String[] ordenCampos = {"LENGUAJES", "SABERES_Y_PENSAMIENTO_CIENTIFICO", "ETICA_NATURALEZA_Y_SOCIEDADES", "DE_LO_HUMANO_Y_LO_COMUNITARIO", "OTROS"};
         for (String c : ordenCampos) {
             if (mapaCampos.containsKey(c)) listaFinal.add(mapaCampos.get(c));
         }
