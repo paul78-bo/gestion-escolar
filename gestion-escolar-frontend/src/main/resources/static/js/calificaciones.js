@@ -175,9 +175,9 @@ async function cargarVistaPreviaBoleta(alumnoId) {
         // Pintar las materias
         data.camposFormativos.forEach(campo => {
             campo.materias.forEach(m => {
-                // 👇 SOLUCIÓN: Leemos el nombre de cualquier propiedad que exista
-                let nombreMateria = m.nombreMateria || m.nombre || m.materia || "";
-                let nombre = nombreMateria.toLowerCase();
+                let nombreOriginal = m.nombreMateria || m.nombre || "";
+                // Normalizamos: a minúsculas y quitamos acentos para que "Inglés" e "Ingles" sean iguales
+                let nombre = nombreOriginal.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
 
                 const pintarPV = (id, t1, t2, t3) => {
                     document.getElementById(`pv-t1-${id}`).textContent = (t1 != null) ? Number(t1).toFixed(1) : '-';
@@ -185,17 +185,17 @@ async function cargarVistaPreviaBoleta(alumnoId) {
                     document.getElementById(`pv-t3-${id}`).textContent = (t3 != null) ? Number(t3).toFixed(1) : '-';
                 };
 
-                // Ahora las comparaciones funcionarán
-                if (nombre.includes('español') || nombre.includes('espanol')) pintarPV('espanol', m.trimestre1, m.trimestre2, m.trimestre3);
-                if (nombre.includes('inglés') || nombre.includes('ingles')) pintarPV('ingles', m.trimestre1, m.trimestre2, m.trimestre3);
-                if (nombre.includes('artes')) pintarPV('artes', m.trimestre1, m.trimestre2, m.trimestre3);
-                if (nombre.includes('matemátic') || nombre.includes('matematic')) pintarPV('matematicas', m.trimestre1, m.trimestre2, m.trimestre3);
-                if (nombre.includes('biolog')) pintarPV('biologia', m.trimestre1, m.trimestre2, m.trimestre3);
-                if (nombre.includes('geograf')) pintarPV('geografia', m.trimestre1, m.trimestre2, m.trimestre3);
-                if (nombre.includes('historia')) pintarPV('historia', m.trimestre1, m.trimestre2, m.trimestre3);
-                if (nombre.includes('cívica') || nombre.includes('etica') || nombre.includes('formacion')) pintarPV('formacion', m.trimestre1, m.trimestre2, m.trimestre3);
-                if (nombre.includes('tecnolog') || nombre.includes('mecatronica')) pintarPV('tecnologia', m.trimestre1, m.trimestre2, m.trimestre3);
-                if (nombre.includes('física') || nombre.includes('educacion')) pintarPV('educacion', m.trimestre1, m.trimestre2, m.trimestre3);
+                // Usamos expresiones regulares para atrapar cualquier variante
+                if (nombre.match(/espanol/)) pintarPV('espanol', m.trimestre1, m.trimestre2, m.trimestre3);
+                else if (nombre.match(/ingles/)) pintarPV('ingles', m.trimestre1, m.trimestre2, m.trimestre3);
+                else if (nombre.match(/artes/)) pintarPV('artes', m.trimestre1, m.trimestre2, m.trimestre3);
+                else if (nombre.match(/matematic/)) pintarPV('matematicas', m.trimestre1, m.trimestre2, m.trimestre3);
+                else if (nombre.match(/biolog/)) pintarPV('biologia', m.trimestre1, m.trimestre2, m.trimestre3);
+                else if (nombre.match(/geograf/)) pintarPV('geografia', m.trimestre1, m.trimestre2, m.trimestre3);
+                else if (nombre.match(/historia/)) pintarPV('historia', m.trimestre1, m.trimestre2, m.trimestre3);
+                else if (nombre.match(/civica|etica|formacion/)) pintarPV('formacion', m.trimestre1, m.trimestre2, m.trimestre3);
+                else if (nombre.match(/tecnolog|mecatronica/)) pintarPV('tecnologia', m.trimestre1, m.trimestre2, m.trimestre3);
+                else if (nombre.match(/fisica|educacion/)) pintarPV('educacion', m.trimestre1, m.trimestre2, m.trimestre3);
             });
         });
 
