@@ -12,16 +12,26 @@ async function cargarAlumnos(pagina = 0) {
     tbody.innerHTML = '<tr><td colspan="7" style="text-align: center;">Cargando...</td></tr>';
 
     try {
+        // 1. Cargamos los alumnos paginados
         const size = 10;
         const url = `${API_URL}/api/alumnos/paginado?page=${pagina}&size=${size}&sortBy=id&sortDir=asc`;
-
         const response = await fetchConAuth(url);
         if (!response) return;
-
         if (!response.ok) throw new Error('Error al cargar alumnos');
 
         const data = await response.json();
         const alumnos = data.content || [];
+
+        // 2. Cargamos TODAS las inscripciones para saber quiénes están en un grupo
+        let alumnosInscritosIds = [];
+        const resInscripciones = await fetchConAuth(`${API_URL}/api/inscripciones`);
+        if (resInscripciones && resInscripciones.ok) {
+            const inscripciones = await resInscripciones.json();
+            // Guardamos solo los IDs de los alumnos que tienen inscripción activa
+            alumnosInscritosIds = inscripciones
+                .filter(i => i.estatus === 'ACTIVA' && i.activo)
+                .map(i => i.alumnoId);
+        }
 
         paginaActual = data.page?.number ?? 0;
         totalPaginas = data.page?.totalPages ?? 0;
@@ -29,10 +39,17 @@ async function cargarAlumnos(pagina = 0) {
         if (alumnos.length === 0) {
             tbody.innerHTML = '<tr><td colspan="7" style="text-align: center;">No hay alumnos registrados</td></tr>';
         } else {
-            tbody.innerHTML = alumnos.map(a => `
+            tbody.innerHTML = alumnos.map(a => {
+                // Validamos si el alumno está inscrito
+                const estaInscrito = alumnosInscritosIds.includes(a.id);
+                const etiquetaInscrito = estaInscrito 
+                    ? '<span style="background-color: #28a745; color: white; padding: 3px 8px; border-radius: 12px; font-size: 11px; margin-left: 5px;">✅ Inscrito</span>' 
+                    : '';
+
+                return `
                 <tr>
                     <td>${a.id}</td>
-                    <td>${a.nombre} ${a.apellidoP} ${a.apellidoM}</td>
+                    <td>${a.nombre} ${a.apellidoP} ${a.apellidoM} ${etiquetaInscrito}</td>
                     <td>${a.email}</td>
                     <td>${a.matricula}</td>
                     <td>${a.telefono ?? '-'}</td>
@@ -43,10 +60,11 @@ async function cargarAlumnos(pagina = 0) {
                         <button class="btn btn-danger btn-sm" onclick="eliminarAlumno(${a.id})">🗑️ Eliminar</button>
                     </td>
                 </tr>
-            `).join('');
+                `;
+            }).join('');
         }
 
-        // Actualizar paginación
+        // Actualizar paginación (igual que antes)
         if (document.getElementById('paginaActual')) document.getElementById('paginaActual').textContent = paginaActual + 1;
         if (document.getElementById('totalPaginas')) document.getElementById('totalPaginas').textContent = totalPaginas;
         if (document.getElementById('btnAnterior')) document.getElementById('btnAnterior').disabled = paginaActual === 0;
@@ -61,7 +79,6 @@ async function cargarAlumnos(pagina = 0) {
         tbody.innerHTML = `<tr><td colspan="7" style="text-align: center; color: red;">Error: ${error.message}</td></tr>`;
     }
 }
-
 // ==========================================
 // 2. FUNCIÓN PARA EDITAR (La que falta)
 // ==========================================
@@ -151,6 +168,28 @@ function cerrarModal() {
     document.getElementById('modal').style.display = 'none';
 }
 
+
+
+function calcularEdad(fechaNacimiento) {
+    const hoy = new Date();
+    const cumple = new Date(fechaNacimiento);
+    let edad = hoy.getFullYear() - cumple.getFullYear();
+    const mes = hoy.getMonth() - cumple.getMonth();
+    if (mes < 0 || (mes === 0 && hoy.getDate() < cumple.getDate())) {
+        edad--;
+    }
+    return edad;
+}
+
+// Dentro de tu función guardarAlumno(e):
+const fechaNac = document.getElementById('fechaNacimiento').value;
+const edad = calcularEdad(fechaNac);
+
+if (edad < 11 || edad > 16) {
+    alert('❌ El alumno debe tener entre 11 y 16 años para ingresar a la Telesecundaria. Edad actual: ' + edad + ' años.');
+    return;
+}
+
 // ==========================================
 // 4. GUARDAR (Crear o Actualizar)
 // ==========================================
@@ -158,6 +197,7 @@ async function guardarAlumno(e) {
     e.preventDefault();
     
     const id = document.getElementById('alumnoId').value;
+	
     
     const alumno = {
         nombre: document.getElementById('nombre').value.trim(),

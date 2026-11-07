@@ -1,5 +1,7 @@
 package com.gestionescolar.api.service.AlumnoServiceImpl;
 
+import java.time.LocalDate;
+import java.time.Period;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -58,6 +60,8 @@ public class AlumnoServiceImpl implements AlumnoService {
 
     @Override
     public AlumnoResponseDTO crear(AlumnoRequestDTO dto) {
+    	
+    	validarEdadNormativa(dto.getFechaNacimiento()); 
         if (alumnoRepository.existsByEmail(dto.getEmail())) {
             throw new RuntimeException("Ya existe un alumno con el email: " + dto.getEmail());
         }
@@ -79,6 +83,7 @@ public class AlumnoServiceImpl implements AlumnoService {
     @Override
     public AlumnoResponseDTO actualizar(Long id, AlumnoRequestDTO dto) {
         Alumno alumno = alumnoRepository.findById(id).orElseThrow(() -> new AlumnoNoEncontradoException(id));
+        validarEdadNormativa(dto.getFechaNacimiento());
 
         if (!alumno.getEmail().equals(dto.getEmail()) && alumnoRepository.existsByEmail(dto.getEmail())) {
             throw new RuntimeException("Ya existe un alumno con el email: " + dto.getEmail());
@@ -150,4 +155,20 @@ public class AlumnoServiceImpl implements AlumnoService {
 
         return new PageImpl<>(content, pageable, resultados.size());
     }
+    
+    private void validarEdadNormativa(LocalDate fechaNacimiento) {
+        if (fechaNacimiento == null) {
+            throw new RuntimeException("La fecha de nacimiento es obligatoria");
+        }
+
+        LocalDate hoy = LocalDate.now();
+        int edad = Period.between(fechaNacimiento, hoy).getYears();
+
+        // Regla de negocio: Telesecundaria (aprox 11 a 16 años)
+        if (edad < 11 || edad > 16) {
+            throw new RuntimeException("El alumno no cumple con la edad normativa para el nivel (debe tener entre 11 y 16 años). Edad calculada: " + edad + " años.");
+        }
+    }
+    
+    
 }
