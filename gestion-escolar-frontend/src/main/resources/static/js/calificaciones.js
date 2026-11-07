@@ -199,7 +199,7 @@ async function cargarVistaPreviaBoleta(alumnoId) {
             });
         });
 
-        // Pintamos los promedios
+        // Pintamos los promedios a ver que sale
         document.getElementById('pv-prom-t1').textContent = (data.promedioT1 != null) ? Number(data.promedioT1).toFixed(1) : 'En curso';
         document.getElementById('pv-prom-t2').textContent = (data.promedioT2 != null) ? Number(data.promedioT2).toFixed(1) : 'En curso';
         document.getElementById('pv-prom-t3').textContent = (data.promedioT3 != null) ? Number(data.promedioT3).toFixed(1) : 'En curso';
