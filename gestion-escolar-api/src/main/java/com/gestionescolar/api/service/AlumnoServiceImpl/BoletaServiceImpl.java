@@ -37,124 +37,175 @@ public class BoletaServiceImpl implements BoletaService {
 		this.calificacionRepository = calificacionRepository;
 	}
 
-    @Override
-    @Transactional(readOnly = true)
-    public BoletaResponseDTO generarBoletaPorAlumno(Long alumnoId) {
+	@Override
+	@Transactional(readOnly = true)
+	public BoletaResponseDTO generarBoletaPorAlumno(Long alumnoId) {
 
-        Alumno alumno = alumnoRepository.findById(alumnoId)
-                .orElseThrow(() -> new AlumnoNoEncontradoException(alumnoId));
+		Alumno alumno = alumnoRepository.findById(alumnoId)
+				.orElseThrow(() -> new AlumnoNoEncontradoException(alumnoId));
 
-        List<Inscripcion> inscripciones = inscripcionRepository.findActivasByAlumnoId(alumnoId);
-        if (inscripciones.isEmpty()) {
-            throw new RuntimeException("El alumno no tiene una inscripción activa");
-        }
+		List<Inscripcion> inscripciones = inscripcionRepository.findActivasByAlumnoId(alumnoId);
+		if (inscripciones.isEmpty()) {
+			throw new RuntimeException("El alumno no tiene una inscripción activa");
+		}
 
-        Grupo grupo = inscripciones.get(0).getGrupo();
-        List<Calificacion> todasCalificaciones = calificacionRepository.findCalificacionesConDetalles(alumnoId);
+		Grupo grupo = inscripciones.get(0).getGrupo();
+		List<Calificacion> todasCalificaciones = calificacionRepository.findCalificacionesConDetalles(alumnoId);
 
-        // Agrupamos por el ID de la asignación para evitar problemas de nombres
-        Map<Long, List<Calificacion>> califsPorAsignacion = todasCalificaciones.stream()
-                .filter(c -> c.getAsignacion().getGrupo().getId().equals(grupo.getId()))
-                .collect(Collectors.groupingBy(c -> c.getAsignacion().getId()));
+		// Agrupamos por el ID de la asignación para evitar problemas de nombres
+		Map<Long, List<Calificacion>> califsPorAsignacion = todasCalificaciones.stream()
+				.filter(c -> c.getAsignacion().getGrupo().getId().equals(grupo.getId()))
+				.collect(Collectors.groupingBy(c -> c.getAsignacion().getId()));
 
-        // Orden oficial de las materias (por nombre para mostrarlas bonito en el frontend)
-        String[] ordenOficial = {
-                "Español", "Inglés", "Artes", "Matemáticas", "Biología", 
-                "Geografía", "Historia", "Formación Cívica y Ética", "Tecnología", "Educación Física"
-            };
+		// Orden oficial de las materias (por nombre para mostrarlas bonito en el
+		// frontend)
+		String[] ordenOficial = { "Español", "Inglés", "Artes", "Matemáticas", "Biología", "Geografía", "Historia",
+				"Formación Cívica y Ética", "Tecnología", "Educación Física" };
 
-        Map<String, CampoFormativoDTO> mapaCampos = new LinkedHashMap<>();
-        BigDecimal sumaPromediosMaterias = BigDecimal.ZERO;
-        boolean todasMateriasCalificadas = true; 
+		Map<String, CampoFormativoDTO> mapaCampos = new LinkedHashMap<>();
+		BigDecimal sumaPromediosMaterias = BigDecimal.ZERO;
+		boolean todasMateriasCalificadas = true;
 
-        double sumaT1 = 0.0, sumaT2 = 0.0, sumaT3 = 0.0;
-        
-        // Iteramos sobre las calificaciones agrupadas
-        for (Map.Entry<Long, List<Calificacion>> entry : califsPorAsignacion.entrySet()) {
-            List<Calificacion> califs = entry.getValue();
-            if (califs.isEmpty()) continue;
+		double sumaT1 = 0.0, sumaT2 = 0.0, sumaT3 = 0.0;
 
-            // Tomamos el nombre real de la materia desde la base de datos
-            String nombreMateriaReal = califs.get(0).getAsignacion().getMateria().getNombre();
-            String campoNombre = "OTROS";
-            
-            // Asignamos el campo formativo basándonos en el nombre real
-            if (nombreMateriaReal.toLowerCase().contains("espa") || nombreMateriaReal.toLowerCase().contains("ingl") || nombreMateriaReal.toLowerCase().contains("arte")) campoNombre = "LENGUAJES";
-            if (nombreMateriaReal.toLowerCase().contains("mate") || nombreMateriaReal.toLowerCase().contains("biol")) campoNombre = "SABERES_Y_PENSAMIENTO_CIENTIFICO";
-            if (nombreMateriaReal.toLowerCase().contains("geog") || nombreMateriaReal.toLowerCase().contains("hist") || nombreMateriaReal.toLowerCase().contains("form") || nombreMateriaReal.toLowerCase().contains("etica")) campoNombre = "ETICA_NATURALEZA_Y_SOCIEDADES";
-            if (nombreMateriaReal.toLowerCase().contains("tecn") || nombreMateriaReal.toLowerCase().contains("fis") || nombreMateriaReal.toLowerCase().contains("educ")) campoNombre = "DE_LO_HUMANO_Y_LO_COMUNITARIO";
+		// Iteramos sobre las calificaciones agrupadas
+		for (Map.Entry<Long, List<Calificacion>> entry : califsPorAsignacion.entrySet()) {
+			List<Calificacion> califs = entry.getValue();
+			if (califs.isEmpty())
+				continue;
 
-            BigDecimal t1 = null, t2 = null, t3 = null;
+			// Tomamos el nombre real de la materia desde la base de datos
+			String nombreMateriaReal = califs.get(0).getAsignacion().getMateria().getNombre();
+			String campoNombre = "OTROS";
 
-            for (Calificacion c : califs) {
-                if (c.getPeriodo() != null && c.getCalificacion() != null) {
-                    if (c.getPeriodo() == 1) t1 = c.getCalificacion();
-                    if (c.getPeriodo() == 2) t2 = c.getCalificacion();
-                    if (c.getPeriodo() == 3) t3 = c.getCalificacion();
-                }
-            }
+			// Asignamos el campo formativo basándonos en el nombre real
+			if (nombreMateriaReal.toLowerCase().contains("espa") || nombreMateriaReal.toLowerCase().contains("ingl")
+					|| nombreMateriaReal.toLowerCase().contains("arte"))
+				campoNombre = "LENGUAJES";
+			if (nombreMateriaReal.toLowerCase().contains("mate") || nombreMateriaReal.toLowerCase().contains("biol"))
+				campoNombre = "SABERES_Y_PENSAMIENTO_CIENTIFICO";
+			if (nombreMateriaReal.toLowerCase().contains("geog") || nombreMateriaReal.toLowerCase().contains("hist")
+					|| nombreMateriaReal.toLowerCase().contains("form")
+					|| nombreMateriaReal.toLowerCase().contains("etica"))
+				campoNombre = "ETICA_NATURALEZA_Y_SOCIEDADES";
+			if (nombreMateriaReal.toLowerCase().contains("tecn") || nombreMateriaReal.toLowerCase().contains("fis")
+					|| nombreMateriaReal.toLowerCase().contains("educ"))
+				campoNombre = "DE_LO_HUMANO_Y_LO_COMUNITARIO";
 
-            sumaT1 += (t1 != null) ? t1.doubleValue() : 0.0;
-            sumaT2 += (t2 != null) ? t2.doubleValue() : 0.0;
-            sumaT3 += (t3 != null) ? t3.doubleValue() : 0.0;
+			BigDecimal t1 = null, t2 = null, t3 = null;
 
-            if (t1 == null && t2 == null && t3 == null) {
-                todasMateriasCalificadas = false;
-            }
+			for (Calificacion c : califs) {
+				if (c.getPeriodo() != null && c.getCalificacion() != null) {
+					if (c.getPeriodo() == 1)
+						t1 = c.getCalificacion();
+					if (c.getPeriodo() == 2)
+						t2 = c.getCalificacion();
+					if (c.getPeriodo() == 3)
+						t3 = c.getCalificacion();
+				}
+			}
 
-            BigDecimal promedioMateria = null;
-            if (t1 != null || t2 != null || t3 != null) {
-                double suma = (t1 != null ? t1.doubleValue() : 0) + (t2 != null ? t2.doubleValue() : 0) + (t3 != null ? t3.doubleValue() : 0);
-                int count = (t1 != null ? 1 : 0) + (t2 != null ? 1 : 0) + (t3 != null ? 1 : 0);
-                promedioMateria = BigDecimal.valueOf(suma / count).setScale(1, RoundingMode.HALF_UP);
-                sumaPromediosMaterias = sumaPromediosMaterias.add(promedioMateria);
-            }
+			sumaT1 += (t1 != null) ? t1.doubleValue() : 0.0;
+			sumaT2 += (t2 != null) ? t2.doubleValue() : 0.0;
+			sumaT3 += (t3 != null) ? t3.doubleValue() : 0.0;
 
-            MateriaCalificacionDTO dto = new MateriaCalificacionDTO();
-            dto.setNombreMateria(nombreMateriaReal); // Enviamos el nombre real (con o sin acento)
-            dto.setCodigoMateria("-");
-            dto.setTrimestre1(t1);
-            dto.setTrimestre2(t2);
-            dto.setTrimestre3(t3);
-            dto.setPromedioMateria(promedioMateria);
+			if (t1 == null && t2 == null && t3 == null) {
+				todasMateriasCalificadas = false;
+			}
 
-            CampoFormativoDTO campoDTO = mapaCampos.computeIfAbsent(campoNombre, k -> {
-                CampoFormativoDTO nuevo = new CampoFormativoDTO();
-                nuevo.setNombre(k);
-                nuevo.setMaterias(new ArrayList<>());
-                return nuevo;
-            });
-            campoDTO.getMaterias().add(dto);
-        }
+			BigDecimal promedioMateria = null;
+			if (t1 != null || t2 != null || t3 != null) {
+				double suma = (t1 != null ? t1.doubleValue() : 0) + (t2 != null ? t2.doubleValue() : 0)
+						+ (t3 != null ? t3.doubleValue() : 0);
+				int count = (t1 != null ? 1 : 0) + (t2 != null ? 1 : 0) + (t3 != null ? 1 : 0);
+				promedioMateria = BigDecimal.valueOf(suma / count).setScale(1, RoundingMode.HALF_UP);
+				sumaPromediosMaterias = sumaPromediosMaterias.add(promedioMateria);
+			}
 
-        BigDecimal promedioFinal = null; 
-        if (todasMateriasCalificadas && !califsPorAsignacion.isEmpty()) {
-            promedioFinal = sumaPromediosMaterias.divide(new BigDecimal(califsPorAsignacion.size()), 1, RoundingMode.HALF_UP);
-        }
+			MateriaCalificacionDTO dto = new MateriaCalificacionDTO();
+			dto.setNombreMateria(nombreMateriaReal); // Enviamos el nombre real (con o sin acento)
+			dto.setCodigoMateria("-");
+			dto.setTrimestre1(t1);
+			dto.setTrimestre2(t2);
+			dto.setTrimestre3(t3);
+			dto.setPromedioMateria(promedioMateria);
 
-        BigDecimal promedioT1 = (sumaT1 > 0) ? BigDecimal.valueOf(sumaT1 / ordenOficial.length).setScale(1, RoundingMode.HALF_UP) : null;
-        BigDecimal promedioT2 = (sumaT2 > 0) ? BigDecimal.valueOf(sumaT2 / ordenOficial.length).setScale(1, RoundingMode.HALF_UP) : null;
-        BigDecimal promedioT3 = (sumaT3 > 0) ? BigDecimal.valueOf(sumaT3 / ordenOficial.length).setScale(1, RoundingMode.HALF_UP) : null;
+			CampoFormativoDTO campoDTO = mapaCampos.computeIfAbsent(campoNombre, k -> {
+				CampoFormativoDTO nuevo = new CampoFormativoDTO();
+				nuevo.setNombre(k);
+				nuevo.setMaterias(new ArrayList<>());
+				return nuevo;
+			});
+			campoDTO.getMaterias().add(dto);
+		}
 
-        BoletaResponseDTO boleta = new BoletaResponseDTO();
-        boleta.setAlumnoId(alumno.getId());
-        boleta.setMatricula(alumno.getMatricula());
-        boleta.setNombreCompleto(alumno.getNombre() + " " + alumno.getApellidoP() + (alumno.getApellidoM() != null ? " " + alumno.getApellidoM() : ""));
-        boleta.setGrupoNombre(grupo.getNombre());
-        boleta.setCicloNombre(grupo.getCiclo().getNombre());
-        
-        boleta.setPromedioT1(promedioT1);
-        boleta.setPromedioT2(promedioT2);
-        boleta.setPromedioT3(promedioT3);
-        boleta.setPromedioFinal(promedioFinal); 
-        
-        List<CampoFormativoDTO> listaFinal = new ArrayList<>();
-        String[] ordenCampos = {"LENGUAJES", "SABERES_Y_PENSAMIENTO_CIENTIFICO", "ETICA_NATURALEZA_Y_SOCIEDADES", "DE_LO_HUMANO_Y_LO_COMUNITARIO", "OTROS"};
-        for (String c : ordenCampos) {
-            if (mapaCampos.containsKey(c)) listaFinal.add(mapaCampos.get(c));
-        }
-        boleta.setCamposFormativos(listaFinal);
+		// 👇 NUEVA VALIDACIÓN: Verificar que TODAS las materias tengan los 3 trimestres
+		// llenos
+		boolean cicloCompleto = true;
 
-        return boleta;
-    }
+		// Recorremos las calificaciones de nuevo para ver si falta algún trimestre
+		for (Map.Entry<Long, List<Calificacion>> entry : califsPorAsignacion.entrySet()) {
+			List<Calificacion> califs = entry.getValue();
+			BigDecimal t1 = null, t2 = null, t3 = null;
+
+			for (Calificacion c : califs) {
+				if (c.getPeriodo() != null && c.getCalificacion() != null) {
+					if (c.getPeriodo() == 1)
+						t1 = c.getCalificacion();
+					if (c.getPeriodo() == 2)
+						t2 = c.getCalificacion();
+					if (c.getPeriodo() == 3)
+						t3 = c.getCalificacion();
+				}
+			}
+
+			// Si a esta materia le falta el trimestre 1, 2 o 3, el ciclo no está completo
+			if (t1 == null || t2 == null || t3 == null) {
+				cicloCompleto = false;
+				break; // Con que una materia no tenga los 3, detenemos la búsqueda
+			}
+		}
+
+		// Solo calculamos el promedio final si TODAS las materias tienen T1, T2 y T3
+		BigDecimal promedioFinal = null;
+		if (cicloCompleto && !califsPorAsignacion.isEmpty()) {
+			promedioFinal = sumaPromediosMaterias.divide(new BigDecimal(califsPorAsignacion.size()), 1,
+					RoundingMode.HALF_UP);
+		}
+
+		// Los promedios de los trimestres se calculan normal
+		BigDecimal promedioT1 = (sumaT1 > 0)
+				? BigDecimal.valueOf(sumaT1 / ordenOficial.length).setScale(1, RoundingMode.HALF_UP)
+				: null;
+		BigDecimal promedioT2 = (sumaT2 > 0)
+				? BigDecimal.valueOf(sumaT2 / ordenOficial.length).setScale(1, RoundingMode.HALF_UP)
+				: null;
+		BigDecimal promedioT3 = (sumaT3 > 0)
+				? BigDecimal.valueOf(sumaT3 / ordenOficial.length).setScale(1, RoundingMode.HALF_UP)
+				: null;
+
+		BoletaResponseDTO boleta = new BoletaResponseDTO();
+		boleta.setAlumnoId(alumno.getId());
+		boleta.setMatricula(alumno.getMatricula());
+		boleta.setNombreCompleto(alumno.getNombre() + " " + alumno.getApellidoP()
+				+ (alumno.getApellidoM() != null ? " " + alumno.getApellidoM() : ""));
+		boleta.setGrupoNombre(grupo.getNombre());
+		boleta.setCicloNombre(grupo.getCiclo().getNombre());
+
+		boleta.setPromedioT1(promedioT1);
+		boleta.setPromedioT2(promedioT2);
+		boleta.setPromedioT3(promedioT3);
+		boleta.setPromedioFinal(promedioFinal);
+
+		List<CampoFormativoDTO> listaFinal = new ArrayList<>();
+		String[] ordenCampos = { "LENGUAJES", "SABERES_Y_PENSAMIENTO_CIENTIFICO", "ETICA_NATURALEZA_Y_SOCIEDADES",
+				"DE_LO_HUMANO_Y_LO_COMUNITARIO", "OTROS" };
+		for (String c : ordenCampos) {
+			if (mapaCampos.containsKey(c))
+				listaFinal.add(mapaCampos.get(c));
+		}
+		boleta.setCamposFormativos(listaFinal);
+
+		return boleta;
+	}
 }
