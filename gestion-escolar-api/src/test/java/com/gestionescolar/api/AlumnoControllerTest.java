@@ -54,14 +54,14 @@ class AlumnoControllerTest {
         request.setCurp("PEGJ800515HCHRRR01");
         request.setEmail("juan@test.com");
         request.setTelefono("6141111111");
-        request.setDireccion("AV. TEST #100");
+        //request.setDireccion("AV. TEST #100");
         request.setGenero(com.gestionescolar.api.enums.Genero.MASCULINO);
         request.setFechaNacimiento(LocalDate.of(2010, 5, 15));
         request.setEstadoCivil("SOLTERO");
         request.setNacionalidad("MEXICANA");
         request.setPaisNacimiento("MÉXICO");
         request.setEntidadNacimiento("CHIHUAHUA");
-        request.setLugarNacimiento("CHIHUAHUA");
+        //request.setLugarNacimiento("CHIHUAHUA");
         request.setMunicipio("CHIHUAHUA");
         request.setColonia("CENTRO");
         request.setCodigoPostal("31000");
