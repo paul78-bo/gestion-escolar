@@ -6,333 +6,301 @@
 <title>Boletas - Gestión Escolar</title>
 <link rel="stylesheet" href="css/styles.css">
 <style>
-/* Estilos específicos para la boleta oficial */
-.boleta-container {
-	max-width: 1100px;
-	margin: 20px auto;
-	background: #fff;
-	padding: 30px;
-	border-radius: 8px;
-	box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-	font-family: Arial, sans-serif;
-}
+    /* Estilos generales de la boleta */
+    .boleta-container {
+        max-width: 1100px;
+        margin: 20px auto;
+        background: #fff;
+        padding: 40px;
+        border-radius: 8px;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        font-family: 'Arial', sans-serif;
+    }
 
-.header-boleta {
-	text-align: center;
-	border-bottom: 2px solid #004080;
-	padding-bottom: 10px;
-	margin-bottom: 20px;
-}
+    /* Encabezado de la escuela */
+    .header-boleta {
+        text-align: center;
+        border-bottom: 3px solid #004080;
+        padding-bottom: 10px;
+        margin-bottom: 30px;
+    }
+    .header-boleta h2 {
+        color: #004080;
+        margin: 0;
+        font-size: 24px;
+        text-transform: uppercase;
+    }
+    .header-boleta p {
+        margin: 5px 0 0 0;
+        color: #666;
+        font-weight: bold;
+    }
 
-.header-boleta h2 {
-	color: #004080;
-	margin: 0;
-}
+    /* Ficha del alumno (Parte superior) */
+    .info-alumno-ficha {
+        border: 2px solid #004080;
+        border-radius: 6px;
+        padding: 15px 20px;
+        margin-bottom: 30px;
+        background-color: #f8f9fa;
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 15px;
+        font-size: 14px;
+    }
+    .info-alumno-ficha div {
+        border-bottom: 1px dashed #ccc;
+        padding-bottom: 5px;
+    }
+    .info-alumno-ficha span {
+        font-weight: bold;
+        color: #333;
+        margin-left: 5px;
+    }
+    .info-alumno-ficha .label {
+        color: #004080;
+        font-weight: bold;
+        text-transform: uppercase;
+        font-size: 12px;
+    }
 
-.info-alumno {
-	display: grid;
-	grid-template-columns: 1fr 1fr;
-	gap: 10px;
-	margin-bottom: 20px;
-	font-size: 14px;
-}
+    /* Tabla Oficial (Parte inferior) */
+    .tabla-boleta {
+        width: 100%;
+        border-collapse: collapse;
+        text-align: center;
+        font-size: 11px;
+        margin-bottom: 20px;
+    }
+    .tabla-boleta th, .tabla-boleta td {
+        border: 1px solid #000;
+        padding: 8px 4px;
+        vertical-align: middle;
+    }
+    .tabla-boleta th {
+        background-color: #f7e6b9;
+        color: #000;
+        font-weight: bold;
+        text-transform: uppercase;
+    }
+    .th-gris {
+        background-color: #e9ecef !important;
+    }
+    .td-izquierda {
+        text-align: left !important;
+        font-weight: bold;
+    }
+    .fila-promedio-final td {
+        background-color: #e9ecef;
+        font-weight: bold;
+        font-size: 12px;
+    }
 
-/* Tabla Oficial */
-.tabla-boleta {
-	width: 100%;
-	border-collapse: collapse;
-	text-align: center;
-	font-size: 11px;
-	margin-bottom: 20px;
-}
+    /* Tabla de firmas */
+    .tabla-firmas {
+        width: 80%;
+        margin: 30px auto 0 auto;
+        border-collapse: collapse;
+        text-align: center;
+        font-size: 11px;
+    }
+    .tabla-firmas th, .tabla-firmas td {
+        border: 1px solid #000;
+        padding: 8px;
+    }
+    .tabla-firmas th {
+        background-color: #f7e6b9;
+        color: #000;
+        font-weight: bold;
+        text-transform: uppercase;
+    }
+    .tabla-firmas .espacio-firma {
+        height: 60px;
+        background-color: #fff;
+    }
 
-.tabla-boleta th, .tabla-boleta td {
-	border: 1px solid #000;
-	padding: 6px;
-	vertical-align: middle;
-}
+    /* Botón de imprimir */
+    .btn-imprimir {
+        display: block;
+        width: 220px;
+        margin: 30px auto;
+        padding: 12px;
+        background: #004080;
+        color: white;
+        text-align: center;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+        font-weight: bold;
+        font-size: 14px;
+        text-decoration: none;
+    }
+    .btn-imprimir:hover {
+        background: #002850;
+    }
 
-/* Colores de encabezados */
-.tabla-boleta th {
-	background-color: #f7e6b9;
-	color: #000;
-	font-weight: bold;
-	text-transform: uppercase;
-}
-
-.th-gris {
-	background-color: #f0f0f0 !important;
-}
-
-/* Clases de alineación */
-.td-izquierda {
-	text-align: left !important;
-	font-weight: bold;
-}
-
-.td-centro {
-	text-align: center !important;
-}
-
-/* Fila del promedio final */
-.fila-promedio-final td {
-	background-color: #f0f0f0;
-	font-weight: bold;
-	font-size: 12px;
-}
-
-/* Tabla de firmas */
-.tabla-firmas {
-	width: 70%;
-	margin-left: auto;
-	margin-right: 0;
-	border-collapse: collapse;
-	text-align: center;
-	font-size: 11px;
-	margin-bottom: 30px;
-	margin-top: 20px;
-}
-
-.tabla-firmas th, .tabla-firmas td {
-	border: 1px solid #000;
-	padding: 6px;
-}
-
-.tabla-firmas th {
-	background-color: #f7e6b9;
-	color: #000;
-	font-weight: bold;
-	text-transform: uppercase;
-	text-align: center;
-}
-
-.tabla-firmas .espacio-firma {
-	height: 50px;
-	background-color: #fff;
-}
-
-.btn-imprimir {
-	display: block;
-	width: 200px;
-	margin: 20px auto;
-	padding: 10px;
-	background: #004080;
-	color: white;
-	text-align: center;
-	border: none;
-	border-radius: 5px;
-	cursor: pointer;
-	text-decoration: none;
-}
-
-/* Estilos para impresión */
-@media print {
-	.sidebar, .banner, .btn-imprimir, #loading, .acciones-boleta {
-		display: none !important;
-	}
-	.content {
-		margin-left: 0 !important;
-		padding: 0 !important;
-	}
-	.boleta-container {
-		box-shadow: none !important;
-		margin: 0 !important;
-		padding: 0 !important;
-		width: 100% !important;
-	}
-	.tabla-boleta th, .tabla-firmas th {
-		background-color: #f7e6b9 !important;
-		-webkit-print-color-adjust: exact;
-	}
-	.th-gris {
-		background-color: #f0f0f0 !important;
-		-webkit-print-color-adjust: exact;
-	}
-	.fila-promedio-final td {
-		background-color: #f0f0f0 !important;
-		-webkit-print-color-adjust: exact;
-	}
-}
+    /* Ocultar menús al imprimir */
+    @media print {
+        .sidebar, .banner, .btn-imprimir, #loading, .acciones-boleta {
+            display: none !important;
+        }
+        .content {
+            margin-left: 0 !important;
+            padding: 0 !important;
+        }
+        .boleta-container {
+            box-shadow: none !important;
+            margin: 0 !important;
+            padding: 0 !important;
+            width: 100% !important;
+        }
+        .tabla-boleta th, .tabla-firmas th, .th-gris, .fila-promedio-final td {
+            -webkit-print-color-adjust: exact;
+        }
+    }
 </style>
 </head>
 <body>
 
-	<!-- SIDEBAR -->
-	<div class="sidebar">
-		<h2>🎓 Gestión Escolar</h2>
-		<a href="dashboard.html">📊 Dashboard</a> <a href="alumnos.html">👥
-			Alumnos</a> <a href="profesores.html">👨‍🏫 Profesores</a> <a
-			href="materias.html">📚 Materias</a> <a href="grupos.html">🏫
-			Grupos</a> <a href="ciclos.html">📅 Ciclos</a> <a
-			href="asignaciones.html">📋 Asignaciones</a> <a
-			href="inscripciones.html">📝 Inscripciones</a> <a
-			href="calificaciones.html">📊 Calificaciones</a> <a
-			href="boletas.html" class="active">📄 Boletas</a> <a href="#"
-			onclick="logout()">🚪 Cerrar Sesión</a>
-	</div>
+    <!-- SIDEBAR -->
+    <div class="sidebar">
+        <h2>🎓 Gestión Escolar</h2>
+        <a href="dashboard.html">📊 Dashboard</a>
+        <a href="alumnos.html">👥 Alumnos</a>
+        <a href="profesores.html">👨‍🏫 Profesores</a>
+        <a href="materias.html">📚 Materias</a>
+        <a href="grupos.html">🏫 Grupos</a>
+        <a href="ciclos.html">📅 Ciclos</a>
+        <a href="asignaciones.html">📋 Asignaciones</a>
+        <a href="inscripciones.html">📝 Inscripciones</a>
+        <a href="calificaciones.html">📊 Calificaciones</a>
+        <a href="boletas.html" class="active">📄 Boletas</a>
+        <a href="#" onclick="logout()">🚪 Cerrar Sesión</a>
+    </div>
 
-	<div class="content">
-		<div class="banner">
-			<h2>📄 Boleta de Calificaciones</h2>
-			<div>
-				Bienvenido, <strong id="usernameDisplay"></strong> | <span
-					id="rolDisplay"></span>
-			</div>
-		</div>
+    <div class="content">
+        <div class="banner">
+            <h2>📄 Boleta de Calificaciones</h2>
+            <div>
+                Bienvenido, <strong id="usernameDisplay"></strong> | <span id="rolDisplay"></span>
+            </div>
+        </div>
 
-		<div class="boleta-container" id="contenedor-boleta"
-			style="display: none;">
-			<div class="header-boleta">
-				<h2>Gestión Escolar</h2>
-				<p>
-					<strong>Boleta de Calificaciones</strong>
-				</p>
-			</div>
+        <!-- CONTENEDOR DE LA BOLETA -->
+        <div class="boleta-container" id="contenedor-boleta" style="display: none;">
+            
+            <!-- PARTE 1: ENCABEZADO -->
+            <div class="header-boleta">
+                <h2>Gestión Escolar</h2>
+                <p>Boleta de Calificaciones Oficial</p>
+            </div>
 
-			<div class="info-alumno">
-				<div>
-					<strong>Alumno:</strong> <span id="b-nombre"></span>
-				</div>
-				<div>
-					<strong>Matrícula:</strong> <span id="b-matricula"></span>
-				</div>
-				<div>
-					<strong>Grupo:</strong> <span id="b-grupo"></span>
-				</div>
-				<div>
-					<strong>Ciclo Escolar:</strong> <span id="b-ciclo"></span>
-				</div>
-			</div>
+            <!-- PARTE 2: DATOS DEL ALUMNO -->
+            <div class="info-alumno-ficha">
+                <div>
+                    <span class="label">Nombre del Alumno:</span> 
+                    <span id="b-nombre">-</span>
+                </div>
+                <div>
+                    <span class="label">Matrícula:</span> 
+                    <span id="b-matricula">-</span>
+                </div>
+                <div>
+                    <span class="label">Grupo:</span> 
+                    <span id="b-grupo">-</span>
+                </div>
+                <div>
+                    <span class="label">Ciclo Escolar:</span> 
+                    <span id="b-ciclo">-</span>
+                </div>
+            </div>
 
-			<table class="tabla-boleta">
-				<thead>
-					<tr>
-						<th rowspan="2" class="th-gris" style="width: 12%;">CAMPOS
-							FORMATIVOS</th>
-						<th colspan="3">LENGUAJES</th>
-						<th colspan="2">SABERES Y PENSAMIENTO CIENTÍFICO</th>
-						<th colspan="3">ÉTICA, NATURALEZA Y SOCIEDADES</th>
-						<th colspan="2">DE LO HUMANO Y LO COMUNITARIO</th>
-						<th rowspan="2" class="th-gris" style="width: 10%;">PROMEDIO</th>
-					</tr>
-					<tr id="tr-materias"></tr>
-				</thead>
-				<tbody>
-					<tr>
-						<td class="td-izquierda td-centro">1º</td>
-						<td id="t1-espanol" class="td-centro"></td>
-						<td id="t1-ingles" class="td-centro"></td>
-						<td id="t1-artes" class="td-centro"></td>
-						<td id="t1-matematicas" class="td-centro"></td>
-						<td id="t1-biologia" class="td-centro"></td>
-						<td id="t1-geografia" class="td-centro"></td>
-						<td id="t1-historia" class="td-centro"></td>
-						<td id="t1-formacion" class="td-centro"></td>
-						<td id="t1-tecnologia" class="td-centro"></td>
-						<td id="t1-educacion" class="td-centro"></td>
-						<td id="prom-t1" class="td-centro"
-							style="background: #fff3cd; font-weight: bold;"></td>
-					</tr>
-					<tr>
-						<td class="td-izquierda td-centro">2º</td>
-						<td id="t2-espanol" class="td-centro"></td>
-						<td id="t2-ingles" class="td-centro"></td>
-						<td id="t2-artes" class="td-centro"></td>
-						<td id="t2-matematicas" class="td-centro"></td>
-						<td id="t2-biologia" class="td-centro"></td>
-						<td id="t2-geografia" class="td-centro"></td>
-						<td id="t2-historia" class="td-centro"></td>
-						<td id="t2-formacion" class="td-centro"></td>
-						<td id="t2-tecnologia" class="td-centro"></td>
-						<td id="t2-educacion" class="td-centro"></td>
-						<td id="prom-t2" class="td-centro"
-							style="background: #fff3cd; font-weight: bold;"></td>
-					</tr>
-					<tr>
-						<td class="td-izquierda td-centro">3º</td>
-						<td id="t3-espanol" class="td-centro"></td>
-						<td id="t3-ingles" class="td-centro"></td>
-						<td id="t3-artes" class="td-centro"></td>
-						<td id="t3-matematicas" class="td-centro"></td>
-						<td id="t3-biologia" class="td-centro"></td>
-						<td id="t3-geografia" class="td-centro"></td>
-						<td id="t3-historia" class="td-centro"></td>
-						<td id="t3-formacion" class="td-centro"></td>
-						<td id="t3-tecnologia" class="td-centro"></td>
-						<td id="t3-educacion" class="td-centro"></td>
-						<td id="prom-t3" class="td-centro"
-							style="background: #fff3cd; font-weight: bold;"></td>
-					</tr>
-					<tr class="fila-promedio-final">
-						<td class="td-izquierda td-centro">PROMEDIO FINAL</td>
-						<td id="pf-espanol" class="td-centro"></td>
-						<td id="pf-ingles" class="td-centro"></td>
-						<td id="pf-artes" class="td-centro"></td>
-						<td id="pf-matematicas" class="td-centro"></td>
-						<td id="pf-biologia" class="td-centro"></td>
-						<td id="pf-geografia" class="td-centro"></td>
-						<td id="pf-historia" class="td-centro"></td>
-						<td id="pf-formacion" class="td-centro"></td>
-						<td id="pf-tecnologia" class="td-centro"></td>
-						<td id="pf-educacion" class="td-centro"></td>
-						<td id="prom-general" class="td-centro"
-							style="background: #d4edda; font-weight: bold;"></td>
-					</tr>
-				</tbody>
-			</table>
+            <!-- PARTE 3: TABLA DE CALIFICACIONES -->
+            <table class="tabla-boleta">
+                <thead>
+                    <tr>
+                        <th rowspan="2" class="th-gris" style="width: 12%;">CAMPOS FORMATIVOS</th>
+                        <th colspan="3">LENGUAJES</th>
+                        <th colspan="2">SABERES Y PENSAMIENTO CIENTÍFICO</th>
+                        <th colspan="3">ÉTICA, NATURALEZA Y SOCIEDADES</th>
+                        <th colspan="2">DE LO HUMANO Y LO COMUNITARIO</th>
+                        <th rowspan="2" class="th-gris" style="width: 10%;">PROMEDIO</th>
+                    </tr>
+                    <tr id="tr-materias"></tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td class="td-izquierda">1º</td>
+                        <td id="t1-espanol"></td><td id="t1-ingles"></td><td id="t1-artes"></td>
+                        <td id="t1-matematicas"></td><td id="t1-biologia"></td>
+                        <td id="t1-geografia"></td><td id="t1-historia"></td><td id="t1-formacion"></td>
+                        <td id="t1-tecnologia"></td><td id="t1-educacion"></td>
+                        <td id="prom-t1" style="background: #fff3cd; font-weight: bold;"></td>
+                    </tr>
+                    <tr>
+                        <td class="td-izquierda">2º</td>
+                        <td id="t2-espanol"></td><td id="t2-ingles"></td><td id="t2-artes"></td>
+                        <td id="t2-matematicas"></td><td id="t2-biologia"></td>
+                        <td id="t2-geografia"></td><td id="t2-historia"></td><td id="t2-formacion"></td>
+                        <td id="t2-tecnologia"></td><td id="t2-educacion"></td>
+                        <td id="prom-t2" style="background: #fff3cd; font-weight: bold;"></td>
+                    </tr>
+                    <tr>
+                        <td class="td-izquierda">3º</td>
+                        <td id="t3-espanol"></td><td id="t3-ingles"></td><td id="t3-artes"></td>
+                        <td id="t3-matematicas"></td><td id="t3-biologia"></td>
+                        <td id="t3-geografia"></td><td id="t3-historia"></td><td id="t3-formacion"></td>
+                        <td id="t3-tecnologia"></td><td id="t3-educacion"></td>
+                        <td id="prom-t3" style="background: #fff3cd; font-weight: bold;"></td>
+                    </tr>
+                    <tr class="fila-promedio-final">
+                        <td class="td-izquierda">PROMEDIO FINAL</td>
+                        <td id="pf-espanol"></td><td id="pf-ingles"></td><td id="pf-artes"></td>
+                        <td id="pf-matematicas"></td><td id="pf-biologia"></td>
+                        <td id="pf-geografia"></td><td id="pf-historia"></td><td id="pf-formacion"></td>
+                        <td id="pf-tecnologia"></td><td id="pf-educacion"></td>
+                        <td id="prom-general" style="background: #d4edda; font-weight: bold;"></td>
+                    </tr>
+                </tbody>
+            </table>
 
-			<table class="tabla-firmas">
-				<thead>
-					<tr>
-						<th colspan="3"
-							style="background-color: #f7e6b9; color: #000; text-align: center;">FIRMA
-							DE LA MADRE PADRE O TUTOR</th>
-					</tr>
-					<tr>
-						<th style="width: 33%; background-color: #f7e6b9; color: #000;">1ER
-							PERIODO</th>
-						<th style="width: 33%; background-color: #f7e6b9; color: #000;">2DO
-							PERIODO</th>
-						<th style="width: 33%; background-color: #f7e6b9; color: #000;">3ER
-							PERIODO</th>
-					</tr>
-				</thead>
-				<tbody>
-					<tr class="espacio-firma">
-						<td></td>
-						<td></td>
-						<td></td>
-					</tr>
-				</tbody>
-			</table>
+            <!-- PARTE 4: FIRMAS -->
+            <table class="tabla-firmas">
+                <thead>
+                    <tr>
+                        <th colspan="3">FIRMA DE LA MADRE PADRE O TUTOR</th>
+                    </tr>
+                    <tr>
+                        <th style="width: 33%;">1ER PERIODO</th>
+                        <th style="width: 33%;">2DO PERIODO</th>
+                        <th style="width: 33%;">3ER PERIODO</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr class="espacio-firma">
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                    </tr>
+                </tbody>
+            </table>
 
-			<!-- BOTONES DE ACCIÓN -->
-			<button class="btn-imprimir" onclick="window.print()">🖨️
-				Imprimir Boleta</button>
+            <!-- BOTONES DE ACCIÓN -->
+            <button class="btn-imprimir" onclick="window.print()">🖨️ Imprimir Boleta</button>
+            <div class="acciones-boleta" style="margin-top: 20px; display: flex; justify-content: center; gap: 15px;">
+                <a href="calificaciones.html" class="btn btn-primary" style="text-decoration: none; padding: 10px 20px;">📝 Calificar a otro alumno</a>
+                <a href="dashboard.html" class="btn btn-secondary" style="text-decoration: none; padding: 10px 20px;">🏠 Ir al Inicio</a>
+            </div>
 
-			<div class="acciones-boleta"
-				style="margin-top: 30px; display: flex; justify-content: center; gap: 15px;">
-				<a href="calificaciones.html" class="btn btn-primary"
-					style="text-decoration: none; padding: 10px 20px;"> 📝
-					Calificar a otro alumno </a> <a href="dashboard.html"
-					class="btn btn-secondary"
-					style="text-decoration: none; padding: 10px 20px;"> 🏠 Ir al
-					Inicio </a>
-			</div>
-			<!-- FIN BOTONES DE ACCIÓN -->
+        </div>
 
-		</div>
+        <div id="loading" style="text-align: center; margin-top: 50px; font-weight: bold; color: #004080;">Cargando boleta...</div>
+    </div>
 
-		<div id="loading" style="text-align: center; margin-top: 50px;">Cargando
-			boleta...</div>
-	</div>
+    <script src="js/config.js"></script>
+    <script src="js/auth.js"></script>
 
-
-
-	<script src="js/config.js"></script>
-	<script src="js/auth.js"></script>
-
-	<script>
+    <script>
         document.addEventListener('DOMContentLoaded', async () => {
             if (!verificarAutenticacion()) return;
             if (!verificarPermisoPagina()) return;
@@ -358,10 +326,10 @@
         });
 
         function pintarMateria(idMateria, t1, t2, t3, prom) {
-            document.getElementById(`t1-${idMateria}`).textContent = (t1 != null) ? Number(t1).toFixed(1) : 'Pendiente';
-            document.getElementById(`t2-${idMateria}`).textContent = (t2 != null) ? Number(t2).toFixed(1) : 'Pendiente';
-            document.getElementById(`t3-${idMateria}`).textContent = (t3 != null) ? Number(t3).toFixed(1) : 'Pendiente';
-            document.getElementById(`pf-${idMateria}`).textContent = (prom != null) ? Number(prom).toFixed(1) : 'Pendiente';
+            document.getElementById(`t1-${idMateria}`).textContent = (t1 != null) ? Number(t1).toFixed(1) : '-';
+            document.getElementById(`t2-${idMateria}`).textContent = (t2 != null) ? Number(t2).toFixed(1) : '-';
+            document.getElementById(`t3-${idMateria}`).textContent = (t3 != null) ? Number(t3).toFixed(1) : '-';
+            document.getElementById(`pf-${idMateria}`).textContent = (prom != null) ? Number(prom).toFixed(1) : '-';
         }
 
         async function cargarBoleta(alumnoId) {
@@ -371,47 +339,46 @@
 
                 const data = await response.json();
 
+                // Llenar la ficha del alumno
                 document.getElementById('b-nombre').textContent = data.nombreCompleto || '-';
                 document.getElementById('b-matricula').textContent = data.matricula || '-';
                 document.getElementById('b-grupo').textContent = data.grupoNombre || '-';
                 document.getElementById('b-ciclo').textContent = data.cicloNombre || '-';
 
+                // Pintar encabezados de materias
                 const trMaterias = document.getElementById('tr-materias');
                 trMaterias.innerHTML = `
-                    <th>ESPAÑOL</th>
-                    <th>INGLÉS</th>
-                    <th>ARTES</th>
-                    <th>MATEMÁTICAS</th>
-                    <th>BIOLOGÍA</th>
-                    <th>GEOGRAFÍA</th>
-                    <th>HISTORIA</th>
-                    <th>FORMACIÓN<br>CÍVICA Y<br>ÉTICA</th>
-                    <th>TECNOLOGÍA</th>
-                    <th>EDUCACIÓN<br>FÍSICA</th>
+                    <th>ESPAÑOL</th><th>INGLÉS</th><th>ARTES</th>
+                    <th>MATEMÁTICAS</th><th>BIOLOGÍA</th>
+                    <th>GEOGRAFÍA</th><th>HISTORIA</th><th>FORMACIÓN<br>CÍVICA Y<br>ÉTICA</th>
+                    <th>TECNOLOGÍA</th><th>EDUCACIÓN<br>FÍSICA</th>
                 `;
 
+                // Pintar las calificaciones (normalizando nombres para evitar problemas de acentos)
                 data.camposFormativos.forEach(campo => {
                     campo.materias.forEach(m => {
-                        let nombre = m.nombreMateria.toLowerCase();
+                        let nombre = (m.nombreMateria || "").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
                         
-                        if (nombre.includes('español')) pintarMateria('espanol', m.trimestre1, m.trimestre2, m.trimestre3, m.promedioMateria);
-                        if (nombre.includes('inglés')) pintarMateria('ingles', m.trimestre1, m.trimestre2, m.trimestre3, m.promedioMateria);
-                        if (nombre.includes('artes')) pintarMateria('artes', m.trimestre1, m.trimestre2, m.trimestre3, m.promedioMateria);
-                        if (nombre.includes('matemátic')) pintarMateria('matematicas', m.trimestre1, m.trimestre2, m.trimestre3, m.promedioMateria);
-                        if (nombre.includes('biolog')) pintarMateria('biologia', m.trimestre1, m.trimestre2, m.trimestre3, m.promedioMateria);
-                        if (nombre.includes('geograf')) pintarMateria('geografia', m.trimestre1, m.trimestre2, m.trimestre3, m.promedioMateria);
-                        if (nombre.includes('historia')) pintarMateria('historia', m.trimestre1, m.trimestre2, m.trimestre3, m.promedioMateria);
-                        if (nombre.includes('cívica') || nombre.includes('etica') || nombre.includes('formacion')) pintarMateria('formacion', m.trimestre1, m.trimestre2, m.trimestre3, m.promedioMateria);
-                        if (nombre.includes('tecnolog') || nombre.includes('mecatronica')) pintarMateria('tecnologia', m.trimestre1, m.trimestre2, m.trimestre3, m.promedioMateria);
-                        if (nombre.includes('física') || nombre.includes('educacion')) pintarMateria('educacion', m.trimestre1, m.trimestre2, m.trimestre3, m.promedioMateria);
+                        if (nombre.includes('espanol')) pintarMateria('espanol', m.trimestre1, m.trimestre2, m.trimestre3, m.promedioMateria);
+                        else if (nombre.includes('ingles')) pintarMateria('ingles', m.trimestre1, m.trimestre2, m.trimestre3, m.promedioMateria);
+                        else if (nombre.includes('artes')) pintarMateria('artes', m.trimestre1, m.trimestre2, m.trimestre3, m.promedioMateria);
+                        else if (nombre.includes('matematic')) pintarMateria('matematicas', m.trimestre1, m.trimestre2, m.trimestre3, m.promedioMateria);
+                        else if (nombre.includes('biolog')) pintarMateria('biologia', m.trimestre1, m.trimestre2, m.trimestre3, m.promedioMateria);
+                        else if (nombre.includes('geograf')) pintarMateria('geografia', m.trimestre1, m.trimestre2, m.trimestre3, m.promedioMateria);
+                        else if (nombre.includes('historia')) pintarMateria('historia', m.trimestre1, m.trimestre2, m.trimestre3, m.promedioMateria);
+                        else if (nombre.includes('civica') || nombre.includes('etica') || nombre.includes('formacion')) pintarMateria('formacion', m.trimestre1, m.trimestre2, m.trimestre3, m.promedioMateria);
+                        else if (nombre.includes('tecnolog') || nombre.includes('mecatronica')) pintarMateria('tecnologia', m.trimestre1, m.trimestre2, m.trimestre3, m.promedioMateria);
+                        else if (nombre.includes('fisica') || nombre.includes('educacion')) pintarMateria('educacion', m.trimestre1, m.trimestre2, m.trimestre3, m.promedioMateria);
                     });
                 });
 
+                // Pintar promedios de trimestres y general
                 document.getElementById('prom-t1').textContent = (data.promedioT1 != null) ? Number(data.promedioT1).toFixed(1) : 'En curso';
                 document.getElementById('prom-t2').textContent = (data.promedioT2 != null) ? Number(data.promedioT2).toFixed(1) : 'En curso';
                 document.getElementById('prom-t3').textContent = (data.promedioT3 != null) ? Number(data.promedioT3).toFixed(1) : 'En curso';
                 document.getElementById('prom-general').textContent = (data.promedioFinal != null) ? Number(data.promedioFinal).toFixed(1) : 'En curso';
 
+                // Mostrar todo
                 document.getElementById('loading').style.display = 'none';
                 document.getElementById('contenedor-boleta').style.display = 'block';
 
