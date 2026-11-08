@@ -39,9 +39,6 @@ public class Alumno {
 	@Column(length = 15)
 	private String telefono;
 
-	@Column(length = 255)
-	private String direccion;
-
 	@Enumerated(EnumType.STRING)
 	@Column(length = 20)
 	private Genero genero;
@@ -49,31 +46,33 @@ public class Alumno {
 	@Column(name = "fecha_nacimiento")
 	private LocalDate fechaNacimiento;
 
-	@Column(name = "lugar_nacimiento", length = 100)
-	private String lugarNacimiento;
-
-	// 🆕 CAMPOS NUEVOS
 	@Column(name = "estado_civil", length = 20)
 	private String estadoCivil;
 
 	@Column(length = 50)
 	private String nacionalidad;
 
+	@Column(length = 500)
+	private String observaciones;
+
+	// ==========================================
+	// DATOS DE NACIMIENTO
+	// ==========================================
 	@Column(name = "pais_nacimiento", length = 50)
 	private String paisNacimiento;
 
-	@Column(name = "entidad_nacimiento", length = 50)
+	@Column(name = "entidad_nacimiento", length = 100)
 	private String entidadNacimiento;
 
-	@Column(length = 50)
-	private String municipio;
+	@Column(name = "municipio_nacimiento", length = 100)
+	private String municipioNacimiento;
 
-	@Column(length = 100)
-	private String colonia;
+	@Column(name = "localidad_nacimiento", length = 100)
+	private String localidadNacimiento;
 
-	@Column(name = "codigo_postal", length = 10)
-	private String codigoPostal;
-
+	// ==========================================
+	// DOMICILIO ACTUAL
+	// ==========================================
 	@Column(length = 100)
 	private String calle;
 
@@ -83,8 +82,20 @@ public class Alumno {
 	@Column(name = "numero_interior", length = 10)
 	private String numeroInterior;
 
-	@Column(length = 500)
-	private String observaciones;
+	@Column(length = 100)
+	private String colonia;
+
+	@Column(name = "codigo_postal", length = 10)
+	private String codigoPostal;
+
+	@Column(length = 100)
+	private String localidad;
+
+	@Column(length = 100)
+	private String municipio;
+
+	@Column(name = "entidad_federativa", length = 100)
+	private String entidadFederativa;
 
 	// ==========================================
 	// DATOS ACADÉMICOS
@@ -112,7 +123,7 @@ public class Alumno {
 	private String tutorEmail;
 
 	// ==========================================
-	// AUDITORÍA
+	// AUDITORÍA Y RELACIONES
 	// ==========================================
 	@Column(nullable = false)
 	private Boolean activo = true;
@@ -123,27 +134,18 @@ public class Alumno {
 	@Column(name = "fecha_actualizacion")
 	private LocalDateTime fechaActualizacion;
 
-	// ==========================================
-	// RELACIÓN 1:1 CON USUARIO
-	// ==========================================
 	@OneToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "usuario_id", unique = true)
 	private Usuario usuario;
 
-	// ==========================================
-	// RELACIÓN 1:N CON INSCRIPCIONES
-	// ==========================================
 	@OneToMany(mappedBy = "alumno", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
 	private List<Inscripcion> inscripciones = new ArrayList<>();
 
-	// ==========================================
-	// RELACIÓN 1:N CON CALIFICACIONES
-	// ==========================================
 	@OneToMany(mappedBy = "alumno", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
 	private List<Calificacion> calificaciones = new ArrayList<>();
 
 	// ==========================================
-	// MÉTODOS HELPER
+	// MÉTODOS HELPER Y JPA
 	// ==========================================
 	public void addInscripcion(Inscripcion inscripcion) {
 		if (inscripcion != null && !inscripciones.contains(inscripcion)) {
@@ -171,9 +173,6 @@ public class Alumno {
 		}
 	}
 
-	// ==========================================
-	// JPA
-	// ==========================================
 	@PrePersist
 	public void prePersist() {
 		LocalDateTime ahora = LocalDateTime.now();
@@ -190,9 +189,6 @@ public class Alumno {
 		this.fechaActualizacion = LocalDateTime.now();
 	}
 
-	// ==========================================
-	// CONSTRUCTORES
-	// ==========================================
 	public Alumno() {
 	}
 
@@ -207,7 +203,7 @@ public class Alumno {
 	}
 
 	// ==========================================
-	// GETTERS Y SETTERS
+	// GETTERS Y SETTERS (Todos los campos)
 	// ==========================================
 	public Long getId() {
 		return id;
@@ -265,14 +261,6 @@ public class Alumno {
 		this.telefono = telefono;
 	}
 
-	public String getDireccion() {
-		return direccion;
-	}
-
-	public void setDireccion(String direccion) {
-		this.direccion = direccion;
-	}
-
 	public Genero getGenero() {
 		return genero;
 	}
@@ -289,15 +277,6 @@ public class Alumno {
 		this.fechaNacimiento = fechaNacimiento;
 	}
 
-	public String getLugarNacimiento() {
-		return lugarNacimiento;
-	}
-
-	public void setLugarNacimiento(String lugarNacimiento) {
-		this.lugarNacimiento = lugarNacimiento;
-	}
-
-	// 🆕 GETTERS Y SETTERS NUEVOS
 	public String getEstadoCivil() {
 		return estadoCivil;
 	}
@@ -312,6 +291,14 @@ public class Alumno {
 
 	public void setNacionalidad(String nacionalidad) {
 		this.nacionalidad = nacionalidad;
+	}
+
+	public String getObservaciones() {
+		return observaciones;
+	}
+
+	public void setObservaciones(String observaciones) {
+		this.observaciones = observaciones;
 	}
 
 	public String getPaisNacimiento() {
@@ -330,28 +317,20 @@ public class Alumno {
 		this.entidadNacimiento = entidadNacimiento;
 	}
 
-	public String getMunicipio() {
-		return municipio;
+	public String getMunicipioNacimiento() {
+		return municipioNacimiento;
 	}
 
-	public void setMunicipio(String municipio) {
-		this.municipio = municipio;
+	public void setMunicipioNacimiento(String municipioNacimiento) {
+		this.municipioNacimiento = municipioNacimiento;
 	}
 
-	public String getColonia() {
-		return colonia;
+	public String getLocalidadNacimiento() {
+		return localidadNacimiento;
 	}
 
-	public void setColonia(String colonia) {
-		this.colonia = colonia;
-	}
-
-	public String getCodigoPostal() {
-		return codigoPostal;
-	}
-
-	public void setCodigoPostal(String codigoPostal) {
-		this.codigoPostal = codigoPostal;
+	public void setLocalidadNacimiento(String localidadNacimiento) {
+		this.localidadNacimiento = localidadNacimiento;
 	}
 
 	public String getCalle() {
@@ -378,12 +357,44 @@ public class Alumno {
 		this.numeroInterior = numeroInterior;
 	}
 
-	public String getObservaciones() {
-		return observaciones;
+	public String getColonia() {
+		return colonia;
 	}
 
-	public void setObservaciones(String observaciones) {
-		this.observaciones = observaciones;
+	public void setColonia(String colonia) {
+		this.colonia = colonia;
+	}
+
+	public String getCodigoPostal() {
+		return codigoPostal;
+	}
+
+	public void setCodigoPostal(String codigoPostal) {
+		this.codigoPostal = codigoPostal;
+	}
+
+	public String getLocalidad() {
+		return localidad;
+	}
+
+	public void setLocalidad(String localidad) {
+		this.localidad = localidad;
+	}
+
+	public String getMunicipio() {
+		return municipio;
+	}
+
+	public void setMunicipio(String municipio) {
+		this.municipio = municipio;
+	}
+
+	public String getEntidadFederativa() {
+		return entidadFederativa;
+	}
+
+	public void setEntidadFederativa(String entidadFederativa) {
+		this.entidadFederativa = entidadFederativa;
 	}
 
 	public String getMatricula() {

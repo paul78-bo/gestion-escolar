@@ -7,315 +7,260 @@
 <link rel="stylesheet" href="css/styles.css">
 </head>
 <body>
-	<!-- SIDEBAR -->
-	<div class="sidebar">
-		<h2>🎓 Gestión Escolar</h2>
-		<a href="dashboard.html">📊 Dashboard</a> <a href="alumnos.html"
-			class="active">👥 Alumnos</a> <a href="profesores.html">👨‍🏫
-			Profesores</a> <a href="materias.html">📚 Materias</a> <a
-			href="grupos.html">🏫 Grupos</a> <a href="ciclos.html">📅 Ciclos</a>
-		<a href="asignaciones.html">📋 Asignaciones</a> <a
-			href="inscripciones.html">📝 Inscripciones</a> <a
-			href="calificaciones.html">📊 Calificaciones</a> <a
-			href="boletas.html">📄 Boletas</a> <a href="#" onclick="logout()">🚪
-			Cerrar Sesión</a>
-	</div>
+    <!-- SIDEBAR -->
+    <div class="sidebar">
+        <h2>🎓 Gestión Escolar</h2>
+        <a href="dashboard.html">📊 Dashboard</a> <a href="alumnos.html" class="active">👥 Alumnos</a> <a href="profesores.html">👨‍🏫 Profesores</a> <a href="materias.html">📚 Materias</a> <a href="grupos.html">🏫 Grupos</a> <a href="ciclos.html">📅 Ciclos</a> <a href="asignaciones.html">📋 Asignaciones</a> <a href="inscripciones.html">📝 Inscripciones</a> <a href="calificaciones.html">📊 Calificaciones</a> <a href="boletas.html">📄 Boletas</a> <a href="#" onclick="logout()">🚪 Cerrar Sesión</a>
+    </div>
 
-	<!-- CONTENIDO -->
-	<div class="content">
-		<div class="banner">
-			<h2>👥 Gestión de Alumnos</h2>
-			<div>
-				Bienvenido, <strong id="usernameDisplay"></strong> | <span
-					id="rolDisplay"></span>
-			</div>
-		</div>
+    <!-- CONTENIDO -->
+    <div class="content">
+        <div class="banner">
+            <h2>👥 Gestión de Alumnos</h2>
+            <div>Bienvenido, <strong id="usernameDisplay"></strong> | <span id="rolDisplay"></span></div>
+        </div>
 
-		<div id="mensaje" class="alert" style="display: none;"></div>
+        <div id="mensaje" class="alert" style="display: none;"></div>
 
-		<div style="margin-bottom: 15px; text-align: right;">
-			<button class="btn btn-success" onclick="abrirModal()">➕
-				Nuevo Alumno</button>
-		</div>
+        <div style="margin-bottom: 15px; text-align: right;">
+            <button class="btn btn-success" onclick="abrirModal()">➕ Nuevo Alumno</button>
+        </div>
 
-		<!-- BÚSQUEDA -->
-		<div class="card">
-			<div style="display: flex; gap: 10px;">
-				<input type="text" id="busqueda" class="form-control"
-					placeholder="Buscar por nombre, apellido, matrícula...">
-				<button class="btn btn-primary" onclick="buscar()">🔍
-					Buscar</button>
-				<button class="btn btn-secondary" onclick="limpiarBusqueda()">❌
-					Limpiar</button>
-			</div>
-		</div>
+        <!-- BÚSQUEDA -->
+        <div class="card">
+            <div style="display: flex; gap: 10px;">
+                <input type="text" id="busqueda" class="form-control" placeholder="Buscar por nombre, apellido, matrícula...">
+                <button class="btn btn-primary" onclick="buscar()">🔍 Buscar</button>
+                <button class="btn btn-secondary" onclick="limpiarBusqueda()">❌ Limpiar</button>
+            </div>
+        </div>
 
-		<!-- TABLA -->
-		<div class="card">
-			<table>
-				<thead>
-					<tr>
-						<th>ID</th>
-						<th>Nombre</th>
-						<th>Email</th>
-						<th>Matrícula</th>
-						<th>Teléfono</th>
-						<th>Estatus</th>
-						<th>Acciones</th>
-					</tr>
-				</thead>
-				<tbody id="tablaBody">
-					<tr>
-						<td colspan="7" style="text-align: center;">Cargando...</td>
-					</tr>
-				</tbody>
-			</table>
+        <!-- TABLA -->
+        <div class="card">
+            <table>
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Nombre</th>
+                        <th>Email</th>
+                        <th>Matrícula</th>
+                        <th>Teléfono</th>
+                        <th>Estatus</th>
+                        <th>Acciones</th>
+                    </tr>
+                </thead>
+                <tbody id="tablaBody">
+                    <tr><td colspan="7" style="text-align: center;">Cargando...</td></tr>
+                </tbody>
+            </table>
 
-			<div style="margin-top: 15px; text-align: center;">
-				<button class="btn btn-secondary" id="btnAnterior"
-					onclick="paginaAnterior()">← Anterior</button>
-				<span style="margin: 0 15px;">Página <strong
-					id="paginaActual">0</strong> de <strong id="totalPaginas">0</strong></span>
-				<button class="btn btn-secondary" id="btnSiguiente"
-					onclick="paginaSiguiente()">Siguiente →</button>
-			</div>
-		</div>
-	</div>
+            <div style="margin-top: 15px; text-align: center;">
+                <button class="btn btn-secondary" id="btnAnterior" onclick="paginaAnterior()">← Anterior</button>
+                <span style="margin: 0 15px;">Página <strong id="paginaActual">0</strong> de <strong id="totalPaginas">0</strong></span>
+                <button class="btn btn-secondary" id="btnSiguiente" onclick="paginaSiguiente()">Siguiente →</button>
+            </div>
+        </div>
+    </div>
 
-	<!-- MODAL COMPLETO -->
-	<div id="modal"
-		style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.5); z-index: 1000; justify-content: center; align-items: center;">
-		<div class="card"
-			style="width: 95%; max-width: 1000px; max-height: 90vh; overflow-y: auto;">
-			<h2 id="modalTitulo">Nuevo Alumno</h2>
-			<form id="alumnoForm">
-				<input type="hidden" id="alumnoId">
+    <!-- MODAL COMPLETO -->
+    <div id="modal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.5); z-index: 1000; justify-content: center; align-items: center;">
+        <div class="card" style="width: 95%; max-width: 1000px; max-height: 90vh; overflow-y: auto;">
+            <h2 id="modalTitulo">Nuevo Alumno</h2>
+            <form id="alumnoForm">
+                <input type="hidden" id="alumnoId">
 
-				<!-- SECCIÓN 1: DATOS PERSONALES -->
-				<h3
-					style="margin-top: 20px; color: #2c3e50; border-bottom: 2px solid #3498db; padding-bottom: 5px;">👤
-					Datos Personales</h3>
-				<div class="row">
-					<div class="col-md-4">
-						<div class="form-group">
-							<label>Nombre *</label><input type="text" id="nombre"
-								class="form-control" required>
-						</div>
-					</div>
-					<div class="col-md-4">
-						<div class="form-group">
-							<label>Apellido Paterno *</label><input type="text"
-								id="apellidoP" class="form-control" required>
-						</div>
-					</div>
-					<div class="col-md-4">
-						<div class="form-group">
-							<label>Apellido Materno *</label><input type="text"
-								id="apellidoM" class="form-control" required>
-						</div>
-					</div>
-					<div class="col-md-4">
-						<div class="form-group">
-							<label>CURP *</label><input type="text" id="curp"
-								class="form-control" required minlength="18" maxlength="18">
-						</div>
-					</div>
-					<div class="col-md-4">
-						<div class="form-group">
-							<label>Email *</label><input type="email" id="email"
-								class="form-control" required>
-						</div>
-					</div>
-					<div class="col-md-4">
-						<div class="form-group">
-							<label>Teléfono *</label><input type="text" id="telefono"
-								class="form-control" required>
-						</div>
-					</div>
-					<div class="col-md-4">
-						<div class="form-group">
-							<label>Género *</label> <select id="genero" class="form-control"
-								required>
-								<option value="">-- Seleccionar --</option>
-								<option value="MASCULINO">Masculino</option>
-								<option value="FEMENINO">Femenino</option>
-								<option value="OTRO">Otro</option>
-							</select>
-						</div>
-					</div>
-					<div class="col-md-4">
-						<div class="form-group">
-							<label>Fecha de Nacimiento *</label><input type="date"
-								id="fechaNacimiento" class="form-control" required>
-						</div>
-					</div>
-					<div class="col-md-4">
-						<div class="form-group">
-							<label>Estado Civil *</label> <select id="estadoCivil"
-								class="form-control" required>
-								<option value="SOLTERO">Soltero(a)</option>
-								<option value="CASADO">Casado(a)</option>
-							</select>
-						</div>
-					</div>
-					<div class="col-md-4">
-						<div class="form-group">
-							<label>Nacionalidad</label><input type="text" id="nacionalidad"
-								class="form-control" value="MEXICANA">
-						</div>
-					</div>
-					<div class="col-md-4">
-						<div class="form-group">
-							<label>País de Nacimiento</label><input type="text"
-								id="paisNacimiento" class="form-control" value="MÉXICO">
-						</div>
-					</div>
-					<div class="col-md-4">
-						<div class="form-group">
-							<label>Entidad de Nacimiento</label><input type="text"
-								id="entidadNacimiento" class="form-control">
-						</div>
-					</div>
-					<div class="col-md-4">
-						<div class="form-group">
-							<label>Lugar de Nacimiento *</label><input type="text"
-								id="lugarNacimiento" class="form-control" required>
-						</div>
-					</div>
-				</div>
+                <!-- SECCIÓN 1: DATOS PERSONALES -->
+                <h3 style="margin-top: 20px; color: #2c3e50; border-bottom: 2px solid #3498db; padding-bottom: 5px;">👤 Datos Personales</h3>
+                <div class="row">
+                    <div class="col-md-4">
+                        <div class="form-group"><label>Nombre *</label><input type="text" id="nombre" class="form-control" required></div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="form-group"><label>Apellido Paterno *</label><input type="text" id="apellidoP" class="form-control" required></div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="form-group"><label>Apellido Materno *</label><input type="text" id="apellidoM" class="form-control" required></div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="form-group"><label>CURP *</label><input type="text" id="curp" class="form-control" required minlength="18" maxlength="18"></div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="form-group"><label>Email *</label><input type="email" id="email" class="form-control" required></div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="form-group"><label>Teléfono *</label><input type="text" id="telefono" class="form-control" required></div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="form-group">
+                            <label>Género *</label> 
+                            <select id="genero" class="form-control" required>
+                                <option value="">-- Seleccionar --</option>
+                                <option value="MASCULINO">Masculino</option>
+                                <option value="FEMENINO">Femenino</option>
+                                <option value="OTRO">Otro</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="form-group"><label>Fecha de Nacimiento *</label><input type="date" id="fechaNacimiento" class="form-control" required></div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="form-group">
+                            <label>Estado Civil *</label> 
+                            <select id="estadoCivil" class="form-control" required>
+                                <option value="SOLTERO">Soltero(a)</option>
+                                <option value="CASADO">Casado(a)</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="form-group"><label>Nacionalidad</label><input type="text" id="nacionalidad" class="form-control" value="MEXICANA"></div>
+                    </div>
+                </div>
 
-				<!-- SECCIÓN 2: DOMICILIO -->
-				<!-- SECCIÓN 2: DOMICILIO -->
-				<h3
-					style="margin-top: 20px; color: #2c3e50; border-bottom: 2px solid #3498db; padding-bottom: 5px;">🏠
-					Domicilio</h3>
-				<div class="row">
-					<div class="col-md-6">
-						<div class="form-group">
-							<label>Calle *</label> <input type="text" id="calle"
-								class="form-control" required>
-						</div>
-					</div>
-					<div class="col-md-2">
-						<div class="form-group">
-							<label>No. Ext</label> <input type="text" id="numeroExterior"
-								class="form-control">
-						</div>
-					</div>
-					<div class="col-md-2">
-						<div class="form-group">
-							<label>No. Int</label> <input type="text" id="numeroInterior"
-								class="form-control">
-						</div>
-					</div>
-					<div class="col-md-2">
-						<div class="form-group">
-							<label>C.P.</label> <input type="text" id="codigoPostal"
-								class="form-control">
-						</div>
-					</div>
+                <!-- SECCIÓN 2: DATOS DE NACIMIENTO -->
+                <h3 style="margin-top: 20px; color: #2c3e50; border-bottom: 2px solid #3498db; padding-bottom: 5px;">🌍 Datos de Nacimiento</h3>
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="form-group"><label>País de Nacimiento *</label><input type="text" id="paisNacimiento" class="form-control" value="MÉXICO" required></div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="form-group"><label>Entidad de Nacimiento *</label><input type="text" id="entidadNacimiento" class="form-control" required></div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="form-group"><label>Municipio de Nacimiento *</label><input type="text" id="municipioNacimiento" class="form-control" required></div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="form-group"><label>Localidad de Nacimiento</label><input type="text" id="localidadNacimiento" class="form-control"></div>
+                    </div>
+                </div>
 
-					<div class="col-md-4">
-						<div class="form-group">
-							<label>Colonia</label> <input type="text" id="colonia"
-								class="form-control">
-						</div>
-					</div>
-					<div class="col-md-4">
-						<div class="form-group">
-							<label>Localidad / Municipio</label> <input type="text"
-								id="municipio" class="form-control">
-						</div>
-					</div>
-					<div class="col-md-4">
-						<div class="form-group">
-							<label>Dirección Completa (Referencia)</label> <input type="text"
-								id="direccion" class="form-control"
-								placeholder="Ej. Entre calles...">
-						</div>
-					</div>
-				</div>
+                <!-- SECCIÓN 3: DOMICILIO ACTUAL -->
+                <h3 style="margin-top: 20px; color: #2c3e50; border-bottom: 2px solid #3498db; padding-bottom: 5px;">🏠 Domicilio Actual</h3>
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="form-group"><label>Calle *</label><input type="text" id="calle" class="form-control" required></div>
+                    </div>
+                    <div class="col-md-2">
+                        <div class="form-group"><label>No. Ext *</label><input type="text" id="numeroExterior" class="form-control" required></div>
+                    </div>
+                    <div class="col-md-2">
+                        <div class="form-group"><label>No. Int</label><input type="text" id="numeroInterior" class="form-control"></div>
+                    </div>
+                    <div class="col-md-2">
+                        <div class="form-group"><label>C.P. *</label><input type="text" id="codigoPostal" class="form-control" required></div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="form-group"><label>Colonia *</label><input type="text" id="colonia" class="form-control" required></div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="form-group"><label>Localidad *</label><input type="text" id="localidad" class="form-control" required></div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="form-group"><label>Municipio *</label><input type="text" id="municipio" class="form-control" required></div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label>Entidad Federativa (Estado) *</label>
+                            <select id="entidadFederativa" class="form-control" required>
+                                <option value="">-- Seleccionar --</option>
+                                <option value="Aguascalientes">Aguascalientes</option>
+                                <option value="Baja California">Baja California</option>
+                                <option value="Baja California Sur">Baja California Sur</option>
+                                <option value="Campeche">Campeche</option>
+                                <option value="Chiapas">Chiapas</option>
+                                <option value="Chihuahua">Chihuahua</option>
+                                <option value="Ciudad de México">Ciudad de México</option>
+                                <option value="Coahuila">Coahuila</option>
+                                <option value="Colima">Colima</option>
+                                <option value="Durango">Durango</option>
+                                <option value="Guanajuato">Guanajuato</option>
+                                <option value="Guerrero">Guerrero</option>
+                                <option value="Hidalgo">Hidalgo</option>
+                                <option value="Jalisco">Jalisco</option>
+                                <option value="Estado de México">Estado de México</option>
+                                <option value="Michoacán">Michoacán</option>
+                                <option value="Morelos">Morelos</option>
+                                <option value="Nayarit">Nayarit</option>
+                                <option value="Nuevo León">Nuevo León</option>
+                                <option value="Oaxaca">Oaxaca</option>
+                                <option value="Puebla">Puebla</option>
+                                <option value="Querétaro">Querétaro</option>
+                                <option value="Quintana Roo">Quintana Roo</option>
+                                <option value="San Luis Potosí">San Luis Potosí</option>
+                                <option value="Sinaloa">Sinaloa</option>
+                                <option value="Sonora">Sonora</option>
+                                <option value="Tabasco">Tabasco</option>
+                                <option value="Tamaulipas">Tamaulipas</option>
+                                <option value="Tlaxcala">Tlaxcala</option>
+                                <option value="Veracruz">Veracruz</option>
+                                <option value="Yucatán">Yucatán</option>
+                                <option value="Zacatecas">Zacatecas</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
 
-				<!-- SECCIÓN 3: DATOS ACADÉMICOS -->
-				<h3
-					style="margin-top: 20px; color: #2c3e50; border-bottom: 2px solid #3498db; padding-bottom: 5px;">🎓
-					Datos Académicos</h3>
-				<div class="row">
-					<div class="col-md-4">
-						<div class="form-group">
-							<label>Matrícula *</label><input type="text" id="matricula"
-								class="form-control" required>
-						</div>
-					</div>
-					<div class="col-md-4">
-						<div class="form-group">
-							<label>Fecha de Ingreso</label><input type="date"
-								id="fechaIngreso" class="form-control">
-						</div>
-					</div>
-					<div class="col-md-4">
-						<div class="form-group">
-							<label>Estatus</label> <select id="estatus" class="form-control">
-								<option value="ACTIVO">Activo</option>
-								<option value="INACTIVO">Inactivo</option>
-								<option value="EGRESADO">Egresado</option>
-								<option value="BAJA_TEMPORAL">Baja Temporal</option>
-								<option value="BAJA_DEFINITIVA">Baja Definitiva</option>
-							</select>
-						</div>
-					</div>
-				</div>
+                <!-- SECCIÓN 4: DATOS ACADÉMICOS -->
+                <h3 style="margin-top: 20px; color: #2c3e50; border-bottom: 2px solid #3498db; padding-bottom: 5px;">🎓 Datos Académicos</h3>
+                <div class="row">
+                    <div class="col-md-4">
+                        <div class="form-group"><label>Matrícula *</label><input type="text" id="matricula" class="form-control" required></div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="form-group"><label>Fecha de Ingreso</label><input type="date" id="fechaIngreso" class="form-control"></div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="form-group">
+                            <label>Estatus</label> 
+                            <select id="estatus" class="form-control">
+                                <option value="ACTIVO">Activo</option>
+                                <option value="INACTIVO">Inactivo</option>
+                                <option value="EGRESADO">Egresado</option>
+                                <option value="BAJA_TEMPORAL">Baja Temporal</option>
+                                <option value="BAJA_DEFINITIVA">Baja Definitiva</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
 
-				<!-- SECCIÓN 4: TUTOR -->
-				<h3
-					style="margin-top: 20px; color: #2c3e50; border-bottom: 2px solid #3498db; padding-bottom: 5px;">👨‍👩‍👧
-					Datos del Tutor</h3>
-				<div class="row">
-					<div class="col-md-4">
-						<div class="form-group">
-							<label>Nombre del Tutor *</label><input type="text"
-								id="tutorNombre" class="form-control" required>
-						</div>
-					</div>
-					<div class="col-md-4">
-						<div class="form-group">
-							<label>Teléfono del Tutor *</label><input type="text"
-								id="tutorTelefono" class="form-control" required>
-						</div>
-					</div>
-					<div class="col-md-4">
-						<div class="form-group">
-							<label>Email del Tutor *</label><input type="email"
-								id="tutorEmail" class="form-control" required>
-						</div>
-					</div>
-				</div>
+                <!-- SECCIÓN 5: TUTOR -->
+                <h3 style="margin-top: 20px; color: #2c3e50; border-bottom: 2px solid #3498db; padding-bottom: 5px;">👨‍👩‍👧 Datos del Tutor</h3>
+                <div class="row">
+                    <div class="col-md-4">
+                        <div class="form-group"><label>Nombre del Tutor *</label><input type="text" id="tutorNombre" class="form-control" required></div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="form-group"><label>Teléfono del Tutor *</label><input type="text" id="tutorTelefono" class="form-control" required></div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="form-group"><label>Email del Tutor *</label><input type="email" id="tutorEmail" class="form-control" required></div>
+                    </div>
+                </div>
 
-				<!-- SECCIÓN 5: OBSERVACIONES -->
-				<div class="row" style="margin-top: 20px;">
-					<div class="col-md-12">
-						<div class="form-group">
-							<label>Observaciones</label>
-							<textarea id="observaciones" class="form-control" rows="3"></textarea>
-						</div>
-					</div>
-				</div>
+                <!-- SECCIÓN 6: OBSERVACIONES -->
+                <div class="row" style="margin-top: 20px;">
+                    <div class="col-md-12">
+                        <div class="form-group">
+                            <label>Observaciones</label>
+                            <textarea id="observaciones" class="form-control" rows="3"></textarea>
+                        </div>
+                    </div>
+                </div>
 
-				<div style="margin-top: 20px; text-align: right;">
-					<button type="button" class="btn btn-secondary"
-						onclick="cerrarModal()">Cancelar</button>
-					<button type="submit" class="btn btn-primary">Guardar
-						Cambios</button>
-				</div>
-			</form>
-		</div>
-	</div>
+                <div style="margin-top: 20px; text-align: right;">
+                    <button type="button" class="btn btn-secondary" onclick="cerrarModal()">Cancelar</button>
+                    <button type="submit" class="btn btn-primary">Guardar Cambios</button>
+                </div>
+            </form>
+        </div>
+    </div>
 
-	<script src="js/config.js"></script>
-	<script src="js/auth.js"></script>
-	<script src="js/alumnos.js"></script>
+    <script src="js/config.js"></script>
+    <script src="js/auth.js"></script>
+    <script src="js/alumnos.js"></script>
 
-	<script>
+    <script>
         document.addEventListener('DOMContentLoaded', () => {
             if (typeof verificarAutenticacion === 'function' && !verificarAutenticacion()) return;
             if (typeof ajustarMenuPorRol === 'function') ajustarMenuPorRol();
@@ -325,11 +270,8 @@
             if (userDisp) userDisp.textContent = getUsername();
             if (rolDisp) rolDisp.textContent = getRol();
             
-            // Agregar evento submit al formulario
             const form = document.getElementById('alumnoForm');
-            if (form) {
-                form.addEventListener('submit', guardarAlumno);
-            }
+            if (form) form.addEventListener('submit', guardarAlumno);
         });
     </script>
 </body>

@@ -1,18 +1,12 @@
 let paginaActual = 0;
 let totalPaginas = 0;
-let busquedaActual = '';
 
-// ==========================================
-// 1. CARGAR TABLA
-// ==========================================
 async function cargarAlumnos(pagina = 0) {
     const tbody = document.getElementById('tablaBody');
     if (!tbody) return;
-
     tbody.innerHTML = '<tr><td colspan="7" style="text-align: center;">Cargando...</td></tr>';
 
     try {
-        // 1. Cargamos los alumnos paginados
         const size = 10;
         const url = `${API_URL}/api/alumnos/paginado?page=${pagina}&size=${size}&sortBy=id&sortDir=asc`;
         const response = await fetchConAuth(url);
@@ -22,7 +16,6 @@ async function cargarAlumnos(pagina = 0) {
         const data = await response.json();
         const alumnos = data.content || [];
 
-        // 2. Cargamos TODAS las inscripciones para saber quiénes están en un grupo
         let alumnosInscritosIds = [];
         try {
             const resInscripciones = await fetchConAuth(`${API_URL}/api/inscripciones`);
@@ -33,7 +26,7 @@ async function cargarAlumnos(pagina = 0) {
                     .map(i => i.alumnoId);
             }
         } catch (e) {
-            console.warn("No se pudieron cargar las inscripciones, pero los alumnos sí:", e);
+            console.warn("No se pudieron cargar las inscripciones:", e);
         }
 
         paginaActual = data.page?.number ?? 0;
@@ -66,7 +59,6 @@ async function cargarAlumnos(pagina = 0) {
             }).join('');
         }
 
-        // Actualizar paginación
         if (document.getElementById('paginaActual')) document.getElementById('paginaActual').textContent = paginaActual + 1;
         if (document.getElementById('totalPaginas')) document.getElementById('totalPaginas').textContent = totalPaginas;
         if (document.getElementById('btnAnterior')) document.getElementById('btnAnterior').disabled = paginaActual === 0;
@@ -75,16 +67,12 @@ async function cargarAlumnos(pagina = 0) {
         if (typeof ocultarBotonesSiNoTienePermiso === 'function') {
             ocultarBotonesSiNoTienePermiso('ADMIN,DIRECTOR,SECRETARIO');
         }
-
     } catch (error) {
         console.error('Error:', error);
         tbody.innerHTML = `<tr><td colspan="7" style="text-align: center; color: red;">Error: ${error.message}</td></tr>`;
     }
 }
 
-// ==========================================
-// 2. FUNCIÓN PARA EDITAR
-// ==========================================
 async function editarAlumno(id) {
     try {
         const response = await fetchConAuth(`${API_URL}/api/alumnos/${id}`);
@@ -98,9 +86,6 @@ async function editarAlumno(id) {
     }
 }
 
-// ==========================================
-// 3. ABRIR MODAL Y LLENAR DATOS
-// ==========================================
 function abrirModal(alumno = null) {
     const modal = document.getElementById('modal');
     const form = document.getElementById('alumnoForm');
@@ -112,6 +97,7 @@ function abrirModal(alumno = null) {
         document.getElementById('modalTitulo').textContent = 'Editar Alumno';
         document.getElementById('alumnoId').value = alumno.id || '';
         
+        // Personales
         document.getElementById('nombre').value = alumno.nombre || '';
         document.getElementById('apellidoP').value = alumno.apellidoP || '';
         document.getElementById('apellidoM').value = alumno.apellidoM || '';
@@ -122,22 +108,29 @@ function abrirModal(alumno = null) {
         document.getElementById('fechaNacimiento').value = alumno.fechaNacimiento || '';
         document.getElementById('estadoCivil').value = alumno.estadoCivil || '';
         document.getElementById('nacionalidad').value = alumno.nacionalidad || '';
+        
+        // Nacimiento
         document.getElementById('paisNacimiento').value = alumno.paisNacimiento || '';
         document.getElementById('entidadNacimiento').value = alumno.entidadNacimiento || '';
-        document.getElementById('lugarNacimiento').value = alumno.lugarNacimiento || '';
+        document.getElementById('municipioNacimiento').value = alumno.municipioNacimiento || '';
+        document.getElementById('localidadNacimiento').value = alumno.localidadNacimiento || '';
         
+        // Domicilio
         document.getElementById('calle').value = alumno.calle || '';
         document.getElementById('numeroExterior').value = alumno.numeroExterior || '';
         document.getElementById('numeroInterior').value = alumno.numeroInterior || '';
         document.getElementById('codigoPostal').value = alumno.codigoPostal || '';
         document.getElementById('colonia').value = alumno.colonia || '';
+        document.getElementById('localidad').value = alumno.localidad || '';
         document.getElementById('municipio').value = alumno.municipio || '';
-        document.getElementById('direccion').value = alumno.direccion || '';
+        document.getElementById('entidadFederativa').value = alumno.entidadFederativa || '';
 
+        // Académicos
         document.getElementById('matricula').value = alumno.matricula || '';
         document.getElementById('fechaIngreso').value = alumno.fechaIngreso || '';
         document.getElementById('estatus').value = alumno.estatus || 'ACTIVO';
 
+        // Tutor
         document.getElementById('tutorNombre').value = alumno.tutorNombre || '';
         document.getElementById('tutorTelefono').value = alumno.tutorTelefono || '';
         document.getElementById('tutorEmail').value = alumno.tutorEmail || '';
@@ -147,6 +140,8 @@ function abrirModal(alumno = null) {
         document.getElementById('modalTitulo').textContent = 'Nuevo Alumno';
         document.getElementById('alumnoId').value = '';
         document.getElementById('estatus').value = 'ACTIVO';
+        document.getElementById('paisNacimiento').value = 'MÉXICO';
+        document.getElementById('nacionalidad').value = 'MEXICANA';
     }
 
     modal.style.display = 'flex';
@@ -167,16 +162,12 @@ function calcularEdad(fechaNacimiento) {
     return edad;
 }
 
-// ==========================================
-// 4. GUARDAR (Crear o Actualizar)
-// ==========================================
 async function guardarAlumno(e) {
     e.preventDefault();
     
     const id = document.getElementById('alumnoId').value;
     const fechaNac = document.getElementById('fechaNacimiento').value;
     
-    // 👇 VALIDACIÓN DE EDAD AQUÍ
     const edad = calcularEdad(fechaNac);
     if (edad < 11 || edad > 16) {
         alert('❌ El alumno debe tener entre 11 y 16 años para ingresar a la Telesecundaria. Edad actual: ' + edad + ' años.');
@@ -194,17 +185,20 @@ async function guardarAlumno(e) {
         fechaNacimiento: document.getElementById('fechaNacimiento').value,
         estadoCivil: document.getElementById('estadoCivil').value,
         nacionalidad: document.getElementById('nacionalidad').value.trim(),
+        
         paisNacimiento: document.getElementById('paisNacimiento').value.trim(),
         entidadNacimiento: document.getElementById('entidadNacimiento').value.trim(),
-        lugarNacimiento: document.getElementById('lugarNacimiento').value.trim(),
+        municipioNacimiento: document.getElementById('municipioNacimiento').value.trim(),
+        localidadNacimiento: document.getElementById('localidadNacimiento').value.trim(),
         
         calle: document.getElementById('calle').value.trim(),
         numeroExterior: document.getElementById('numeroExterior').value.trim(),
         numeroInterior: document.getElementById('numeroInterior').value.trim(),
         codigoPostal: document.getElementById('codigoPostal').value.trim(),
         colonia: document.getElementById('colonia').value.trim(),
+        localidad: document.getElementById('localidad').value.trim(),
         municipio: document.getElementById('municipio').value.trim(),
-        direccion: document.getElementById('direccion').value.trim(),
+        entidadFederativa: document.getElementById('entidadFederativa').value,
         
         matricula: document.getElementById('matricula').value.trim(),
         fechaIngreso: document.getElementById('fechaIngreso').value,
@@ -244,9 +238,6 @@ async function guardarAlumno(e) {
     }
 }
 
-// ==========================================
-// 5. BÚSQUEDA Y PAGINACIÓN
-// ==========================================
 async function buscar() {
     const termino = document.getElementById('busqueda').value.trim();
     if (!termino) { cargarAlumnos(0); return; }
@@ -309,7 +300,6 @@ function limpiarBusqueda() {
 function paginaAnterior() { if (paginaActual > 0) cargarAlumnos(paginaActual - 1); }
 function paginaSiguiente() { if (paginaActual < totalPaginas - 1) cargarAlumnos(paginaActual + 1); }
 
-// Inicialización
 document.addEventListener('DOMContentLoaded', () => {
     if (document.getElementById('tablaBody')) {
         cargarAlumnos(0);
