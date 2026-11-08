@@ -13,12 +13,12 @@ document.addEventListener('DOMContentLoaded', async () => {
 });
 
 // --- VISTA 1: BÚSQUEDA INICIAL ---
+// --- VISTA 1: BÚSQUEDA INICIAL ---
 async function buscarInicial() {
     const termino = document.getElementById('inputBuscarInicial').value.toLowerCase().trim();
     if (!termino) return alert('Ingresa nombre o matrícula');
 
     // Buscamos en TODOS los alumnos del sistema (no solo de un grupo)
-    // Necesitamos un endpoint que busque alumnos por nombre o matrícula
     const r = await fetchConAuth(`${API_URL}/api/alumnos/buscar?termino=${termino}`);
 
     if (!r || !r.ok) return alert('Error al buscar alumno');
@@ -42,6 +42,13 @@ async function buscarInicial() {
         <p style="margin: 5px 0 0 0; font-size: 12px;">Matrícula: <strong>${alumnoSeleccionado.alumnoMatricula}</strong></p>
     `;
 
+    // 👇 AGREGADO: Configurar el botón de "Ver Boleta Oficial" con el ID del alumno
+    const btnBoleta = document.getElementById('btnIrBoleta');
+    if (btnBoleta) {
+        btnBoleta.href = `boletas.html?alumnoId=${alumnoEncontrado.id}`;
+    }
+    // 👆 FIN DEL CAMBIO
+
     // Ocultar buscador y mostrar vista de trabajo
     document.getElementById('vista-buscador').style.display = 'none';
     document.getElementById('vista-trabajo').style.display = 'grid';
@@ -50,7 +57,6 @@ async function buscarInicial() {
     await cargarGruposDelAlumno(alumnoEncontrado.id);
     await cargarVistaPreviaBoleta(alumnoEncontrado.id);
 }
-
 // --- VISTA 2: CARGA DE DATOS DEL ALUMNO ---
 async function cargarGruposDelAlumno(alumnoId) {
     // Obtenemos la inscripción del alumno para saber a qué grupo pertenece
