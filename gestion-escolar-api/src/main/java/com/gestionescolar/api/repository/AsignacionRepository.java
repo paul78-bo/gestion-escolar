@@ -1,6 +1,8 @@
 package com.gestionescolar.api.repository;
 
 import com.gestionescolar.api.entity.Asignacion;
+import com.gestionescolar.api.enums.DiaSemana;
+
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -63,4 +65,8 @@ public interface AsignacionRepository extends JpaRepository<Asignacion, Long> {
     	       "LOWER(a.aula) LIKE LOWER(CONCAT('%', :termino, '%'))" +
     	       ")")
     	List<Asignacion> buscarPorTermino(@Param("termino") String termino);
+    
+
+boolean existsByGrupoIdAndMateriaIdAndProfesorIdAndDiaSemanaAndActivoTrue(
+    Long grupoId, Long materiaId, Long profesorId, DiaSemana diaSemana);
 }

@@ -27,7 +27,7 @@ async function cargarMaterias() {
     const r = await fetchConAuth(`${API_URL}/api/materias/activas`);
     if (!r || !r.ok) return;
     const materias = await r.json();
-    
+
     document.getElementById('materiasCheckboxes').innerHTML = materias.map(m => `
         <div style="margin-bottom: 5px;">
             <label style="display: flex; align-items: center; cursor: pointer; font-weight: normal;">
@@ -98,7 +98,7 @@ async function abrirModal(asignacion = null) {
     const titulo = document.getElementById('modalTitulo');
     const form = document.getElementById('asignacionForm');
     form.reset();
-    
+
     // Desmarcar todo primero
     document.querySelectorAll('input[name="materiasSeleccionadas"], input[name="diasSeleccionados"]').forEach(cb => {
         cb.checked = false;
@@ -112,18 +112,18 @@ async function abrirModal(asignacion = null) {
         document.getElementById('profesorId').value = asignacion.profesorId || '';
         document.getElementById('horaInicio').value = asignacion.horaInicio || '';
         document.getElementById('horaFin').value = asignacion.horaFin || '';
-        
+
         // 🔥 TRAER TODAS LAS ASIGNACIONES DE ESTE PROFESOR EN ESTE GRUPO
         try {
             const res = await fetchConAuth(`${API_URL}/api/asignaciones/grupo/${asignacion.grupoId}`);
             if (res && res.ok) {
                 const asignacionesGrupo = await res.json();
                 const delProfesor = asignacionesGrupo.filter(a => a.profesorId === asignacion.profesorId);
-                
+
                 delProfesor.forEach(a => {
                     const cbMateria = document.querySelector(`input[name="materiasSeleccionadas"][value="${a.materiaId}"]`);
                     if (cbMateria) cbMateria.checked = true;
-                    
+
                     const cbDia = document.querySelector(`input[name="diasSeleccionados"][value="${a.diaSemana}"]`);
                     if (cbDia) cbDia.checked = true;
                 });
@@ -146,7 +146,7 @@ function cerrarModal() {
 
 async function guardarAsignacion(e) {
     e.preventDefault();
-    
+
     // 👇 PROTECCIÓN ANTI DOBLE CLIC
     const btnSubmit = document.querySelector('#asignacionForm button[type="submit"]');
     if (btnSubmit) {
@@ -159,10 +159,10 @@ async function guardarAsignacion(e) {
     const profesorVal = document.getElementById('profesorId').value;
     const horaInicio = document.getElementById('horaInicio').value || null;
     const horaFin = document.getElementById('horaFin').value || null;
-    
+
     const materiasSeleccionadas = Array.from(document.querySelectorAll('input[name="materiasSeleccionadas"]:checked')).map(cb => parseInt(cb.value));
     const diasSeleccionados = Array.from(document.querySelectorAll('input[name="diasSeleccionados"]:checked')).map(cb => cb.value);
-    
+
     if (!grupoVal || !profesorVal || materiasSeleccionadas.length === 0 || diasSeleccionados.length === 0 || !horaInicio || !horaFin) {
         alert('❌ Debes seleccionar un grupo, un profesor, al menos una materia, al menos un día y el horario.');
         if (btnSubmit) {
@@ -174,19 +174,21 @@ async function guardarAsignacion(e) {
 
     try {
         if (id) {
-            // MODO EDICIÓN: borrar las viejas y crear las nuevas
+            // MODO EDICIÓN: borrar las viejas
             const resExistentes = await fetchConAuth(`${API_URL}/api/asignaciones/grupo/${grupoVal}`);
             if (resExistentes && resExistentes.ok) {
                 const existentes = await resExistentes.json();
                 const delProfesor = existentes.filter(a => a.profesorId === parseInt(profesorVal));
-                
-                for (const a of delProfesor) {
-                    await fetchConAuth(`${API_URL}/api/asignaciones/${a.id}`, { method: 'DELETE' });
-                }
+
+                // Borrar en paralelo también
+                await Promise.all(delProfesor.map(a =>
+                    fetchConAuth(`${API_URL}/api/asignaciones/${a.id}`, { method: 'DELETE' })
+                ));
             }
         }
 
-        let exitos = 0;
+        // 👇 MAGIA: Creamos un arreglo de promesas (peticiones) y las lanzamos TODAS AL MISMO TIEMPO
+        const promesas = [];
         for (const materiaId of materiasSeleccionadas) {
             for (const dia of diasSeleccionados) {
                 const asignacion = {
@@ -197,11 +199,16 @@ async function guardarAsignacion(e) {
                     horaInicio, horaFin,
                     activo: true
                 };
-                const response = await fetchConAuth(`${API_URL}/api/asignaciones`, { method: 'POST', body: JSON.stringify(asignacion) });
-                if (response && response.ok) exitos++;
+                promesas.push(
+                    fetchConAuth(`${API_URL}/api/asignaciones`, { method: 'POST', body: JSON.stringify(asignacion) })
+                );
             }
         }
-        
+
+        // Esperamos a que todas terminen al mismo tiempo
+        const resultados = await Promise.all(promesas);
+        const exitos = resultados.filter(r => r && r.ok).length;
+
         mostrarMensaje(`✅ Se guardaron ${exitos} asignaciones correctamente.`);
         cerrarModal();
         cargarAsignaciones(paginaActual);

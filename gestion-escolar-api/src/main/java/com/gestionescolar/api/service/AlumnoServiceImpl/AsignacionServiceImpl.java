@@ -93,20 +93,12 @@ public class AsignacionServiceImpl implements AsignacionService {
         Profesor profesor = profesorRepository.findById(dto.getProfesorId())
                 .orElseThrow(() -> new ProfesorNoEncontradoException(dto.getProfesorId()));
 
-        // 2. 🔥 VALIDACIÓN CLAVE: Evitar duplicados exactos
-        // Buscamos si ya existe una asignación con el mismo grupo, materia, profesor y día
-        boolean existe = asignacionRepository.findAll().stream()
-                .anyMatch(a -> a.getActivo() &&
-                               a.getGrupo().getId().equals(dto.getGrupoId()) &&
-                               a.getMateria().getId().equals(dto.getMateriaId()) &&
-                               a.getProfesor().getId().equals(dto.getProfesorId()) &&
-                               a.getDiaSemana() != null && a.getDiaSemana().equals(dto.getDiaSemana()));
+        // 2. 🔥 VALIDACIÓN OPTIMIZADA: Preguntamos a la base de datos directamente
+        boolean existe = asignacionRepository.existsByGrupoIdAndMateriaIdAndProfesorIdAndDiaSemanaAndActivoTrue(
+                dto.getGrupoId(), dto.getMateriaId(), dto.getProfesorId(), dto.getDiaSemana());
 
         if (existe) {
             System.out.println("⚠️ Asignación duplicada ignorada: " + materia.getNombre() + " - " + dto.getDiaSemana());
-            // Si ya existe, simplemente devolvemos una respuesta (o podrías lanzar una excepción)
-            // Para evitar que el frontend falle, devolvemos un DTO vacío o el existente.
-            // Lo ideal es lanzar una excepción, pero para no romper el bucle del frontend, la ignoramos.
             return asignacionMapper.toResponseDTO(new Asignacion()); 
         }
 
@@ -132,7 +124,6 @@ public class AsignacionServiceImpl implements AsignacionService {
         }
         return asignacionMapper.toResponseDTO(guardada);
     }
-    
     @Override
     public AsignacionResponseDTO actualizar(Long id, AsignacionRequestDTO dto) {
         Asignacion a = asignacionRepository.findById(id)
