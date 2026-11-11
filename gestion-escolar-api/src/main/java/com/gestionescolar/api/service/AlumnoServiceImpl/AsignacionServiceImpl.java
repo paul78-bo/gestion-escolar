@@ -1,5 +1,6 @@
 package com.gestionescolar.api.service.AlumnoServiceImpl;
 
+import com.gestionescolar.api.dto.AsignacionBatchRequestDTO;
 import com.gestionescolar.api.dto.AsignacionRequestDTO;
 import com.gestionescolar.api.dto.AsignacionResponseDTO;
 import com.gestionescolar.api.entity.Asignacion;
@@ -8,6 +9,7 @@ import com.gestionescolar.api.entity.Grupo;
 import com.gestionescolar.api.entity.Inscripcion;
 import com.gestionescolar.api.entity.Materia;
 import com.gestionescolar.api.entity.Profesor;
+import com.gestionescolar.api.enums.DiaSemana;
 import com.gestionescolar.api.exception.AsignacionNoEncontradaException;
 import com.gestionescolar.api.exception.GrupoNoEncontradoException;
 import com.gestionescolar.api.exception.MateriaNoEncontradaException;
@@ -28,6 +30,7 @@ import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -205,5 +208,62 @@ public class AsignacionServiceImpl implements AsignacionService {
         return asignacionRepository.buscarPorTermino(termino).stream()
                 .map(asignacionMapper::toResponseDTO)
                 .collect(Collectors.toList());
+    }
+    
+    @Override
+    @Transactional
+    public void crearLote(AsignacionBatchRequestDTO dto) {
+        Grupo grupo = grupoRepository.findById(dto.getGrupoId()).orElseThrow(() -> new GrupoNoEncontradoException(dto.getGrupoId()));
+        Profesor profesor = profesorRepository.findById(dto.getProfesorId()).orElseThrow(() -> new ProfesorNoEncontradoException(dto.getProfesorId()));
+
+        // 1. Borramos las asignaciones anteriores de este profesor en este grupo (para modo edición)
+        List<Asignacion> existentes = asignacionRepository.findActivasByGrupoId(grupo.getId())
+                .stream().filter(a -> a.getProfesor().getId().equals(profesor.getId())).collect(Collectors.toList());
+        
+        if (!existentes.isEmpty()) {
+            existentes.forEach(a -> a.setActivo(false));
+            asignacionRepository.saveAll(existentes); // Soft delete en lote
+        }
+
+        // 2. Preparamos el arreglo de nuevas asignaciones
+        List<Asignacion> nuevasAsignaciones = new ArrayList<>();
+        List<Inscripcion> inscripciones = inscripcionRepository.findActivasByGrupoId(grupo.getId());
+
+        for (Long materiaId : dto.getMateriasIds()) {
+            Materia materia = materiaRepository.findById(materiaId).orElseThrow(() -> new MateriaNoEncontradaException(materiaId));
+            
+            for (String diaStr : dto.getDiasSemana()) {
+                Asignacion a = new Asignacion();
+                a.setGrupo(grupo);
+                a.setMateria(materia);
+                a.setProfesor(profesor);
+                a.setDiaSemana(DiaSemana.valueOf(diaStr)); // Convertimos el String al Enum
+                a.setHoraInicio(dto.getHoraInicio());
+                a.setHoraFin(dto.getHoraFin());
+                a.setActivo(true);
+                nuevasAsignaciones.add(a);
+            }
+        }
+
+        // 3. Guardamos todas las asignaciones de golpe
+        List<Asignacion> guardadas = asignacionRepository.saveAll(nuevasAsignaciones);
+
+        // 4. Creamos las calificaciones de golpe (En lugar de hacerlo en un for lento)
+        List<Calificacion> nuevasCalificaciones = new ArrayList<>();
+        for (Asignacion asig : guardadas) {
+            for (Inscripcion i : inscripciones) {
+                for (int periodo = 1; periodo <= 3; periodo++) {
+                    Calificacion c = new Calificacion();
+                    c.setAsignacion(asig);
+                    c.setAlumno(i.getAlumno());
+                    c.setCalificacion(null);
+                    c.setObservaciones("Sin calificar");
+                    c.setPeriodo(periodo);
+                    c.setActivo(true);
+                    nuevasCalificaciones.add(c);
+                }
+            }
+        }
+        calificacionRepository.saveAll(nuevasCalificaciones); // Guardado masivo en 1 solo viaje
     }
 }

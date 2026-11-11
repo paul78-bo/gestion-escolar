@@ -1,5 +1,6 @@
 package com.gestionescolar.api.service;
 
+import com.gestionescolar.api.dto.AsignacionBatchRequestDTO;
 import com.gestionescolar.api.dto.AsignacionRequestDTO;
 import com.gestionescolar.api.dto.AsignacionResponseDTO;
 import org.springframework.data.domain.Page;
@@ -27,4 +28,6 @@ public interface AsignacionService {
     List<AsignacionResponseDTO> listarPorMateria(Long materiaId);
 
     List<AsignacionResponseDTO> buscarPorTermino(String termino);
+
+	void crearLote(AsignacionBatchRequestDTO dto);
 }

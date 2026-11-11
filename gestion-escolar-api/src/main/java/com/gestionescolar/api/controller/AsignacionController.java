@@ -1,5 +1,6 @@
 package com.gestionescolar.api.controller;
 
+import com.gestionescolar.api.dto.AsignacionBatchRequestDTO;
 import com.gestionescolar.api.dto.AsignacionRequestDTO;
 import com.gestionescolar.api.dto.AsignacionResponseDTO;
 import com.gestionescolar.api.service.AsignacionService;
@@ -113,5 +114,13 @@ public class AsignacionController {
     @Operation(summary = "Buscar asignaciones por término")
     public ResponseEntity<List<AsignacionResponseDTO>> buscar(@RequestParam String termino) {
         return ResponseEntity.ok(asignacionService.buscarPorTermino(termino));
+    }
+    
+    @PostMapping("/lote")
+    @PreAuthorize("hasAnyRole('ADMIN', 'PROFESOR', 'DIRECTOR', 'SECRETARIO')")
+    @Operation(summary = "Crear múltiples asignaciones en un solo lote")
+    public ResponseEntity<Void> crearLote(@RequestBody AsignacionBatchRequestDTO dto) {
+        asignacionService.crearLote(dto);
+        return ResponseEntity.status(HttpStatus.CREATED).build();
     }
 }

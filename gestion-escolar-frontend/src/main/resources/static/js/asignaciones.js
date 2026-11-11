@@ -172,54 +172,36 @@ async function guardarAsignacion(e) {
         return;
     }
 
-    try {
-        if (id) {
-            // MODO EDICIÓN: borrar las viejas
-            const resExistentes = await fetchConAuth(`${API_URL}/api/asignaciones/grupo/${grupoVal}`);
-            if (resExistentes && resExistentes.ok) {
-                const existentes = await resExistentes.json();
-                const delProfesor = existentes.filter(a => a.profesorId === parseInt(profesorVal));
+	try {
+	    // Preparamos el paquete con todos los datos
+	    const paquete = {
+	        grupoId: parseInt(grupoVal),
+	        profesorId: parseInt(profesorVal),
+	        materiasIds: materiasSeleccionadas,
+	        diasSemana: diasSeleccionados,
+	        horaInicio: horaInicio,
+	        horaFin: horaFin
+	    };
 
-                // Borrar en paralelo también
-                await Promise.all(delProfesor.map(a =>
-                    fetchConAuth(`${API_URL}/api/asignaciones/${a.id}`, { method: 'DELETE' })
-                ));
-            }
-        }
+	    // Hacemos UNA SOLA petición
+	    const response = await fetchConAuth(`${API_URL}/api/asignaciones/lote`, { 
+	        method: 'POST', 
+	        body: JSON.stringify(paquete) 
+	    });
 
-        // 👇 MAGIA: Creamos un arreglo de promesas (peticiones) y las lanzamos TODAS AL MISMO TIEMPO
-        const promesas = [];
-        for (const materiaId of materiasSeleccionadas) {
-            for (const dia of diasSeleccionados) {
-                const asignacion = {
-                    grupoId: parseInt(grupoVal),
-                    materiaId: materiaId,
-                    profesorId: parseInt(profesorVal),
-                    diaSemana: dia,
-                    horaInicio, horaFin,
-                    activo: true
-                };
-                promesas.push(
-                    fetchConAuth(`${API_URL}/api/asignaciones`, { method: 'POST', body: JSON.stringify(asignacion) })
-                );
-            }
-        }
+	    if (!response || !response.ok) throw new Error('Error al guardar el lote');
 
-        // Esperamos a que todas terminen al mismo tiempo
-        const resultados = await Promise.all(promesas);
-        const exitos = resultados.filter(r => r && r.ok).length;
-
-        mostrarMensaje(`✅ Se guardaron ${exitos} asignaciones correctamente.`);
-        cerrarModal();
-        cargarAsignaciones(paginaActual);
-    } catch (error) {
-        alert('❌ ' + error.message);
-    } finally {
-        if (btnSubmit) {
-            btnSubmit.disabled = false;
-            btnSubmit.textContent = 'Guardar';
-        }
-    }
+	    mostrarMensaje(`✅ Asignaciones guardadas correctamente.`);
+	    cerrarModal();
+	    cargarAsignaciones(paginaActual);
+	} catch (error) {
+	    alert('❌ ' + error.message);
+	} finally {
+	    if (btnSubmit) {
+	        btnSubmit.disabled = false;
+	        btnSubmit.textContent = 'Guardar';
+	    }
+	}
 }
 
 async function editarAsignacion(id) {
