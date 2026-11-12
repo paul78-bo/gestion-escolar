@@ -93,9 +93,11 @@ public class InscripcionServiceImpl implements InscripcionService {
             throw new RuntimeException("El grupo " + grupo.getNombre() + " no está activo");
         }
 
-        // 4. Validar que el grupo tenga capacidad
-        if (grupo.getInscritos() >= grupo.getCapacidad()) {
-            throw new RuntimeException("El grupo " + grupo.getNombre() + " está lleno");
+        // 4. 👇 VALIDACIÓN BLINDADA: Contamos las inscripciones reales en la BD
+        long inscritosReales = inscripcionRepository.countAlumnosByGrupoId(grupo.getId());
+        
+        if (inscritosReales >= grupo.getCapacidad()) {
+            throw new RuntimeException("El grupo " + grupo.getNombre() + " ya está lleno. Capacidad máxima: " + grupo.getCapacidad());
         }
 
         // 5. Validar que no exista duplicado
@@ -107,8 +109,8 @@ public class InscripcionServiceImpl implements InscripcionService {
         Inscripcion i = inscripcionMapper.toEntity(dto, alumno, grupo);
         Inscripcion guardada = inscripcionRepository.save(i);
 
-        // 7. Incrementar inscritos del grupo
-        grupo.setInscritos(grupo.getInscritos() + 1);
+        // 7. Incrementar inscritos del grupo (Para mantener el contador actualizado)
+        grupo.setInscritos((int) inscritosReales + 1); // Sincronizamos con el valor real + 1
         grupoRepository.save(grupo);
 
         // 8. Auto-crear calificaciones para todas las asignaciones del grupo
@@ -117,7 +119,7 @@ public class InscripcionServiceImpl implements InscripcionService {
             Calificacion c = new Calificacion();
             c.setAsignacion(asignacion);
             c.setAlumno(alumno);
-            c.setCalificacion(null);  // Sin calificar aún
+            c.setCalificacion(null);
             c.setObservaciones("Sin calificar");
             c.setActivo(true);
             calificacionRepository.save(c);
@@ -125,7 +127,6 @@ public class InscripcionServiceImpl implements InscripcionService {
 
         return inscripcionMapper.toResponseDTO(guardada);
     }
-
     @Override
     public InscripcionResponseDTO actualizar(Long id, InscripcionRequestDTO dto) {
         Inscripcion i = inscripcionRepository.findById(id)
